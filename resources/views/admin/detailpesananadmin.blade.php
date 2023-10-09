@@ -51,14 +51,26 @@
                                             @php
                                                 $dikirim = 'Ambil langsung ke penjual';
                                             @endphp
-                                        @else
-                                            @php
-                                                $dikirim = 'Dikirim dengan ekspedisi';
-                                            @endphp
                                         @endif
                                         {{ $dikirim }}
                                     </td>
                                 </tr>
+                                @if ($detail->kirim_ekspedisi == 1)
+                                <tr>
+                                    <th>Layanan Ekspedisi</th>
+                                    <td></td>
+                                    <td>
+                                        {{ $detail->layanan_ekspedisi }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ongkos Kirim</th>
+                                    <td></td>
+                                    <td>
+                                    Rp. {{ number_format($detail->biaya_ongkir) }}
+                                    </td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <th>Total Belanja</th>
                                     <td></td>
@@ -85,23 +97,33 @@
                                     </div>
                                     @endif
                                     </td>
-                                </tr>
-                                @if ($detail->bukti_bayar === null)
                                     <tr>
-                                        <th>Bukti Bayar</th>
-                                        <td></td>
-                                        <td> Belum ada </td>
-                                    </tr>
-                                @else
-                                    <tr>
-                                        <th>Bukti Bayar</th>
+                                        <th>Bukti Bayar<br>(format pdf, jpg, png, jpeg)</th>
                                         <td></td>
                                         <td>
-                                            <img src="{{ url('buktibayar/' . $detail->bukti_bayar) }}" alt="Preview" width="100" height="100" style="display: inline-block; margin-right: 10px;">
-                                            <a href="{{ url('buktibayar/' . $detail->bukti_bayar) }}" download>{{ $detail->bukti_bayar }}</a>
+                                            <form enctype="multipart/form-data" id="up_buktibayar" name="up_buktibayar">
+                                            @csrf
+                                            <input type="file" id="buktibayar" name="buktibayar">
+                                            </form>
                                         </td>
                                     </tr>
-                                @endif
+                                    <tr>
+                                        <th></th>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" id="uploadBtn" name="uploadBtn">Upload</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                        @if ($detail->bukti_bayar !== null)
+                                        <img src="{{ url('buktibayar/' . $detail->bukti_bayar) }}" alt="Preview" width="100" height="100" style="display: inline-block; margin-right: 10px;">
+                                        <a href="{{ url('buktibayar/' . $detail->bukti_bayar) }}" download>{{ $detail->bukti_bayar }}</a>
+                                        @endif
+                                        </td>
+                                    </tr>
+                                </tr>
                             </tbody>        
                         </table>
                         @if($detail->kirim_ekspedisi == 1)
@@ -138,20 +160,41 @@
                                 <th scope="col">Warna</th>
                                 <th scope="col">Bahan</th>
                                 <th scope="col">Jumlah</th>
+                                <th scope="col">Tambahan Motif</th>
                                 <th scope="col">Harga (per item)</th>
+                                <th scope="col">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $total = 0;
+                                @endphp
                                 @foreach($data as $key => $data)
+                                @php
+                                    $subtotal = $data->jumlah * $data->harga_produk;
+                                    $total += $subtotal;
+                                @endphp
                                 <tr>
                                     <th>{{++$key}}</th>
                                     <td>{{$data->nama_produk}}</td>
                                     <td>{{$data->nama_warna}}</td>
                                     <td>{{$data->nama_bahan}}</td>
                                     <td>{{$data->jumlah}}</td>
+                                    @php
+                                        $tambahMotif = 'Tidak';
+                                        if ($data->tambahan_motif === 1) {
+                                            $tambahMotif = 'Ya';
+                                        }
+                                    @endphp
+                                    <td>{{ $tambahMotif }}</td>
                                     <td>{{ number_format($data->harga_produk)}}</td>
+                                    <td>{{ number_format($subtotal) }}</td>
                                 </tr>   
                                 @endforeach
+                                <tr>
+                                    <td colspan="7" style="text-align: right; font-weight: bold;">Total</td>
+                                    <td style="font-weight: bold; color: blue;">{{ number_format($total) }}</td>
+                                </tr>
                             </tbody>
                         </table>
                         <label for="note" class="block text-sm font-medium text-gray-700"> Catatan Pesanan</label>
@@ -164,6 +207,8 @@
                         <a href="/selesaikanpesananadm/{{ $detail->id }}">
                             <button class="btn btn-success btn-sm float-right mt-5 mb-3" id="selesaipesanan" name="selesaipesanan" onclick="return confirm('Apakah anda yakin ingin menyelesaikan pesanan ini?')">Selesaikan Pesanan</button>
                         </a>
+                        @elseif ($detail->status_transaksi === 'Selesai')
+                        <a href="{{ route('generate.invoice', ['id' => $detail->id]) }}" class="btn btn-primary btn-sm mt-3 mb-3 float-right">Cetak Bukti Pembelian</a>
                         @endif
                         <!-- downn -->
                     </div>
@@ -192,6 +237,34 @@
                 },
                 error:function(error){
                     alert("Gagal update status transaksi");
+                }
+            });
+    });
+</script>
+<script>
+    let uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.addEventListener('click', function() {
+        var form = document.getElementById("up_buktibayar");
+        var formData = new FormData(form);
+        formData.append('id_transaksi', id_transaksi);
+        for (const entry of formData.entries()) {
+            console.log(entry[0] + ': ' + entry[1]);
+        }
+        console.log([...formData.entries()]);
+        $.ajax({
+                url: "/addBuktiBayar",
+                type: "POST",
+                processData: false,
+                contentType: false,
+                data:formData,
+                cache: false,
+                success: function(dataResult){
+                    alert("Berhasil upload bukti bayar");
+                    location.reload();
+                },
+                error: function (error) {
+                    console.log(error.responseJSON.message);
+                    alert("Gagal upload bukti bayar : " +error.responseJSON.message);
                 }
             });
     });

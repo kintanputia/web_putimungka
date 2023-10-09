@@ -33,9 +33,19 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        <div>
+                            {!! $data->links() !!}
+                        </div>
                         <!-- downnn -->
                     </div>
                 </div>
             </div>
         </div>
+<style>
+    .pagination{
+        float: left;
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+</style>
 @endsection

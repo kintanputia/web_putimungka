@@ -6,19 +6,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesananController extends Controller
 {
     public function index_pesanan()
     {
         $id_user = Auth::user()->id;
-        $data = DB::table('transaksis')->orderby('transaksis.id', 'desc')->where('id_user', $id_user)->get();
+        $data = DB::table('transaksis')->orderby('transaksis.id', 'desc')->where('id_user', $id_user)->paginate(10);
         return view('pelanggan.daftarpesananpelanggan', ['data'=>$data]);
     }
-    public function index_pesananadm()
+    public function index_pesananadm(Request $request)
     {
-        $data = DB::table('transaksis')->orderby('transaksis.id', 'desc')->get();
-        return view('admin.pesananadmin', ['data'=>$data]);
+        $user = DB::table('users')->get();
+        $status = $request->input('status');
+        $query = DB::table('transaksis')->orderBy('transaksis.id', 'desc');
+        if ($status && $status !== 'all') {
+            $query->where('status_transaksi', $status);
+        }
+        $data = $query->paginate(10);
+
+        return view('admin.pesananadmin', compact('data', 'status', 'user'));
     }
     public function insert_pesanan(Request $request)
     {
@@ -29,21 +37,25 @@ class PesananController extends Controller
         $status_transaksi = 'Belum Dibayar';
         $total_belanja = intval($request->total_belanja);
         $biaya_ongkir = intval($request->biaya_ongkir);
-        $addtransaksi = DB::table('transaksis')->insertGetId([
-            'id_user'=>$id_user,
+
+        $addDistribusi = DB::table('distribusi_barangs')->insertGetId([
             'nama_pelanggan'=>$request->nama_pelanggan,
             'no_hp'=>$request->no_hp,
-            'tgl_pesan'=>$tgl_pesan,
-            'total_belanja'=>$total_belanja,
             'kirim_ekspedisi'=>$request->kirim_ekspedisi,
             'biaya_ongkir'=>$biaya_ongkir,
             'layanan_ekspedisi'=>$request->layanan_ekspedisi,
-            'status_transaksi'=>$status_transaksi,
             'alamat'=>$request->alamat,
             'kecamatan_tujuan'=>$request->kecamatan,
             'kota_tujuan'=>$request->kota,
             'provinsi_tujuan'=>$request->provinsi,
             'kode_pos'=>$request->kode_pos,
+        ]);
+        $addtransaksi = DB::table('transaksis')->insertGetId([
+            'id_user'=>$id_user,
+            'id_distribusi'=>$addDistribusi,
+            'tgl_pesan'=>$tgl_pesan,
+            'total_belanja'=>$total_belanja,
+            'status_transaksi'=>$status_transaksi,
             'note_transaksi'=>$request->note_transaksi
             ]);
         
@@ -53,15 +65,15 @@ class PesananController extends Controller
                 // hapus isi keranjang
                 DB::table('keranjangs')
                         ->where('id_produk', $detail['id_produk'])
-                        ->where('nama_warna', $detail['nama_warna'])
-                        ->where('nama_bahan', $detail['nama_bahan'])
+                        ->where('warna', $detail['nama_warna'])
+                        ->where('bahan', $detail['nama_bahan'])
                         ->where('harga_produk', $detail['harga_produk'])
                         ->delete();
                 DB::table('detail_transaksis')->insert([
                     'id_transaksi'=>$addtransaksi,
                     'id_produk' => $detail['id_produk'],
-                    'nama_warna' => $detail['nama_warna'],
-                    'nama_bahan' => $detail['nama_bahan'],
+                    'warna' => $detail['nama_warna'],
+                    'bahan' => $detail['nama_bahan'],
                     'jumlah' => $detail['jumlah'],
                     'harga_produk' => $detail['harga_produk'],
                     'tambahan_motif'=> $detail['tambahan_motif']
@@ -83,21 +95,29 @@ class PesananController extends Controller
     {
         $data = DB::table('detail_transaksis')->orderby('detail_transaksis.id', 'desc')->where('id_transaksi', $id)
                     ->join('produks', 'produks.id', '=', 'detail_transaksis.id_produk')
+                    ->join('warnas', 'warnas.id', '=', 'detail_transaksis.warna')
+                    ->join('bahans', 'bahans.id', '=', 'detail_transaksis.bahan')
                     ->get();
-        $detail = DB::table('transaksis')->where('id', $id)->first();
+        $detail = DB::table('transaksis')->where('transaksis.id', $id)
+                    ->join('distribusi_barangs', 'distribusi_barangs.id', '=', 'transaksis.id_distribusi')
+                    ->first();
         return view('pelanggan.detailpesananpelanggan', ['data'=>$data, 'detail'=>$detail]);
     }
     public function detail_pesanan_admin ($id)
     {
         $data = DB::table('detail_transaksis')->orderby('detail_transaksis.id', 'desc')->where('id_transaksi', $id)
                     ->join('produks', 'produks.id', '=', 'detail_transaksis.id_produk')
+                    ->join('warnas', 'warnas.id', '=', 'detail_transaksis.warna')
+                    ->join('bahans', 'bahans.id', '=', 'detail_transaksis.bahan')
                     ->get();
         $detail = DB::table('transaksis')->where('transaksis.id', $id)
                     ->join('users', 'users.id', '=', 'transaksis.id_user')
+                    ->join('distribusi_barangs', 'distribusi_barangs.id', '=', 'transaksis.id_distribusi')
                     ->select(
                         'transaksis.*',
                         'users.id as id_user',
-                        'users.role as role'
+                        'users.role as role',
+                        'distribusi_barangs.*'
                     )
                     ->first();
         return view('admin.detailpesananadmin', ['data'=>$data, 'detail'=>$detail]);
@@ -168,5 +188,28 @@ class PesananController extends Controller
                     ->update([
                         'status_transaksi'=>$status
                     ]);
+    }
+    public function generateInvoicePdf($id)
+    {
+        $data = DB::table('detail_transaksis')
+        ->orderBy('detail_transaksis.id', 'desc')
+        ->where('id_transaksi', $id)
+        ->join('produks', 'produks.id', '=', 'detail_transaksis.id_produk')
+        ->get();
+
+        $detail = DB::table('transaksis')
+            ->where('transaksis.id', $id)
+            ->join('users', 'users.id', '=', 'transaksis.id_user')
+            ->select(
+                'transaksis.*',
+                'users.id as id_user',
+                'users.role as role'
+            )
+            ->first();
+        
+        // generate pdf
+        $pdf = app('dompdf.wrapper')->loadView('admin.invoice', compact('data', 'detail'));
+
+        return $pdf->stream('invoice.pdf');
     }
 }

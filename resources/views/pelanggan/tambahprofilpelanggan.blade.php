@@ -169,7 +169,7 @@ $(document).ready(function() {
                 url: url,
                 data:formData,
                 success: function () {
-                    alert("Data Berhasil Ditambahkan");
+                    alert("Anda Berhasil Melengkapi Profil Anda, Selamat Berbelanja");
                     location.href = "/profilpelanggan/{{Auth::user()->id}}";
                 },
                 error: function (xhr, status, error) {
@@ -178,7 +178,7 @@ $(document).ready(function() {
                         errorMessage = xhr.responseText;
                     }
                     console.log(errorMessage);
-                    alert("Data Gagal Ditambahkan");
+                    alert("Anda Gagal Melengkapi Profil Anda");
                 }
             });
         }

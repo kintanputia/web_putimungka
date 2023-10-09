@@ -38,11 +38,11 @@
                                     <p>Warna : {{ $data->nama_warna }}</p>
                                     <p>Bahan : {{ $data->nama_bahan }}</p>
                                     
-                                    @if ($data->tambahan_motif === 0)
+                                    @if ($data->tambahan_motif === 1)
                                     <p><strong>*dengan tambahan motif</strong></p>
                                     @endif
 
-                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&nama_warna={{ $data->nama_warna }}&nama_bahan={{ $data->nama_bahan }}&harga_produk={{ $data->harga_produk }}">
+                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->warna }}&id_bahan={{ $data->bahan }}&harga_produk={{ $data->harga_produk }}">
                                         <button class="btn btn-danger btn-sm" onclick="return confirm('Apakah anda yakin ingin menghapus produk ini dari keranjang?');">
                                             <i class="fa fa-trash p-1" aria-hidden="true"></i>
                                         </button>
@@ -87,8 +87,8 @@
 
                                 $item = [
                                     'id_produk' => $data->id_produk,
-                                    'nama_warna' => $data->nama_warna,
-                                    'nama_bahan' => $data->nama_bahan,
+                                    'nama_warna' => $data->warna,
+                                    'nama_bahan' => $data->bahan,
                                     'harga_produk' => $data->harga_produk,
                                     'jumlah' => $data->jumlah,
                                     'tambahan_motif' => $data->tambahan_motif
@@ -218,6 +218,11 @@
             </div>
         </div>
     </div>
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
 <script>
     $(document).ready(function(){
         text(1);
@@ -284,6 +289,7 @@
         }
     }
     function save_alamat_baru(){
+        $('#result').empty();
         let c = document.getElementById('alamat').value;
         let d = document.getElementById('province_id');
         var kota = document.getElementById('city_id');
@@ -345,11 +351,12 @@
     }
 </script>
 <script>
+    $('#courier').on('change', function(e){ $('#result').empty(); }) //kosong tabel daftar ongkir saat kurir berubah
     $('#checkBtn').on('click', function(e){
                     e.preventDefault();
                     $("#pengirimanPH").text(0);
                     $("#layananEkspedisiPH").text('');
-                    let origin = '446' //id kota pyk pada database rajaongkir
+                    let origin = $('#origin_city').val();
                     let destination = $('#destination_city').val();
                     let courier = $('#courier').val();
                     let weight = $('#weight').val();

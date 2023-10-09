@@ -335,11 +335,7 @@
                 alert("Kolom Model harus diisi");
                 valid = false;
             }
-            else if (h == ""){
-                alert("Harap Upload Foto Produk");
-                valid = false;
-            }
-            else if (f == ""){
+            else if (i == ""){
                 alert("Kolom Deskrpsi harus diisi");
                 valid = false;
             }

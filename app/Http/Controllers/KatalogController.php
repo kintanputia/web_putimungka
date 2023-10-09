@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Auth;
 class KatalogController extends Controller
 {
     public function index(){
-        $data = DB::table('produks')->orderby('id', 'desc')->get();
-        return view('admin.katalogadmin', ['data'=>$data]);
+        $data = DB::table('produks')->orderby('id', 'desc')->paginate(15);
+        return view('admin.katalogadmin', ['produk'=>$data]);
     }
     public function index_propel(){
-        $data = DB::table('produks')->orderby('id', 'desc')->get();
-        return view('pelanggan.katalogproduk', ['data'=>$data]);
+        $data = DB::table('produks')->orderby('id', 'desc')->paginate(15);
+        return view('pelanggan.katalogproduk', ['produk'=>$data]);
     }
     public function index_warna(){
         $warna = DB::table('warnas')->orderby('id', 'asc')->get();
@@ -25,8 +25,9 @@ class KatalogController extends Controller
         $request->validate([
             'nama_warna' => 'required'
         ]);
+        $nama_warna = ucwords($request->nama_warna);
         $add = DB::table('warnas')->insert([
-            'nama_warna'=>$request->nama_warna
+            'nama_warna'=>$nama_warna
             ]);
         $update  = DB::table('warnas')->orderby('id', 'asc')->get();
         if ($add){
@@ -48,8 +49,9 @@ class KatalogController extends Controller
         $request->validate([
             'nama_bahan' => 'required'
         ]);
+        $nama_bahan = ucwords($request->nama_bahan);
         $add = DB::table('bahans')->insert([
-            'nama_bahan'=>$request->nama_bahan
+            'nama_bahan'=>$nama_bahan
             ]);
         $update  = DB::table('bahans')->orderby('id', 'asc')->get();
         if ($add){
@@ -128,6 +130,8 @@ class KatalogController extends Controller
         $nama_foto = json_encode($pics); //array->string
         $warnaArray = explode(',', $validatedData['selectedColors']);
         $bahanArray = explode(',', $validatedData['selectedMaterial']);
+        $warnaArray = array_values(array_unique($warnaArray));
+        $bahanArray = array_values(array_unique($bahanArray));
         $simpan =  DB::table('produks')->insertGetId([
             'nama_produk'=>$validatedData['nama_produk'],
             'harga'=>$validatedData['harga'],
@@ -161,35 +165,46 @@ class KatalogController extends Controller
     }
     public function destroy_warna($id)
     {
-        $hapus = DB::table('warnas')->where('id', $id)
-                            ->delete();
-        if($hapus){
-            return redirect()->action([KatalogController::class, 'index_warna']);
-        }
-        else{
-            return redirect()->back();
+        try {
+            $hapus = DB::table('warnas')->where('id', $id)
+                                ->delete();
+            if($hapus){
+                return redirect()->action([KatalogController::class, 'index_warna']);
+            }
+            else{
+                return redirect()->back();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Warna tidak dapat dihapus karena terdapat produk yang menggunakan warna ini');
         }
     }
     public function destroy_bahan($id)
     {
-        $hapus = DB::table('bahans')->where('id', $id)
-                            ->delete();
-        if($hapus){
-            return redirect()->action([KatalogController::class, 'index_bahan']);
-        }
-        else{
-            return redirect()->back();
+        try {
+            $hapus = DB::table('bahans')->where('id', $id)
+                                ->delete();
+            if($hapus){
+                return redirect()->action([KatalogController::class, 'index_bahan']);
+            }
+            else{
+                return redirect()->back();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Bahan tidak dapat dihapus karena terdapat produk yang menggunakan bahan ini');
         }
     }
     public function destroy_produk($id)
     {
-        $hapus = DB::table('produks')->where('id', $id)
-                            ->delete();
-        if($hapus){
-            return redirect()->action([KatalogController::class, 'index']);
-        }
-        else{
-            return redirect()->back();
+        try {
+            $hapus = DB::table('produks')->where('id', $id)->delete();
+    
+            if ($hapus) {
+                return redirect()->action([KatalogController::class, 'index']);
+            } else {
+                return redirect()->back()->with('error', 'Produk Gagal Dihapus');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Produk tidak dapat dihapus karena produk sudah terdapat dalam data transaksi');
         }
     }
     public function edit_produk($id)

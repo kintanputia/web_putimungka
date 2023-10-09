@@ -22,7 +22,7 @@ class CreateBahanProduksTable extends Migration
             $table->unsignedBigInteger('id_bahan');
             $table->foreign('id_bahan')->references('id')->on('bahans')
                                     ->onUpdate('cascade')
-                                    ->onDelete('cascade');
+                                    ->onDelete('restrict');
             $table->timestamps();
         });
     }

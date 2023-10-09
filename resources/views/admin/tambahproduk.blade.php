@@ -117,12 +117,28 @@
             let e = document.forms["frm_add"]["nama_motif"].value;
             let f = document.forms["frm_add"]["jenis_jahitan"].value;
             let g = document.forms["frm_add"]["model"].value;
-            let h = document.getElementsByName('foto[]');
             let i = document.forms["frm_add"]["deskripsi"].value;
             let arw = document.getElementsByName('warna[]');
             let arb = document.getElementsByName('bahan[]');
+            var foto = document.querySelectorAll('input[name="foto[]"]');
+            var h = false;
 
-            if (arw.length === 0) {
+            if (foto[0].files.length > 0) {
+                h = true;
+            }
+
+            if (a == "") {
+                alert("Nama Produk harus diisi");
+            }
+            else if (e == ""){
+                alert("Kolom Nama Motif harus diisi");
+                valid = false;
+            }
+            else if (g == ""){
+                alert("Kolom Model harus diisi");
+                valid = false;
+            }
+            else if (arw.length === 0) {
                 alert("Harap pilih warna produk");
                 valid = false;
             }
@@ -130,38 +146,27 @@
                 alert("Harap pilih bahan produk");
                 valid = false;
             }
-            else if (a == "") {
-                alert("Nama Produk harus diisi");
+            else if (f == ""){
+                alert("Harap pilih salah satu jenis jahitan");
+                valid = false;
             }
             else if (b == ""){
                 alert("Kolom Harga harus diisi");
                 valid = false;
             }
             else if (c == ""){
-                alert("Kolom Ukuran harus dipilih");
+                alert("Kolom Ukuran harus diisi");
                 valid = false;
             }
             else if (d == ""){
                 alert("Kolom Berat harus diisi");
                 valid = false;
             }
-            else if (e == ""){
-                alert("Kolom Nama Motif harus diisi");
-                valid = false;
-            }
-            else if (f == ""){
-                alert("Kolom Jenis Jahitan harus diisi");
-                valid = false;
-            }
-            else if (g == ""){
-                alert("Kolom Model harus diisi");
-                valid = false;
-            }
-            else if (h == ""){
+            else if (!h){
                 alert("Harap Upload Foto Produk");
                 valid = false;
             }
-            else if (f == ""){
+            else if (i == ""){
                 alert("Kolom Deskrpsi harus diisi");
                 valid = false;
             }
@@ -225,7 +230,7 @@
             url: url,
             data:formData,
             success: function () {
-                alert("Data Berhasil Ditambahkan");
+                alert("Produk Berhasil Ditambahkan ke Katalog");
                 location.href = "/katalogadmin";
             },
             error: function (xhr, status, error) {
@@ -234,7 +239,7 @@
                     errorMessage = xhr.responseText;
                 }
                 console.log(errorMessage);
-                alert("Data Gagal Ditambahkan");
+                alert("Produk Gagal Ditambahkan ke Katalog");
             }
         });
         }

@@ -32,11 +32,15 @@
 
                                                 <!-- Controls -->
                                                 <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
-                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <div class="carousel-control-icon-bg">
+                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    </div>
                                                     <span class="sr-only">Previous</span>
                                                 </a>
                                                 <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
-                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <div class="carousel-control-icon-bg">
+                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    </div>
                                                     <span class="sr-only">Next</span>
                                                 </a>
                                                 </div>
@@ -164,14 +168,14 @@
                                                                     <select class="form-control mb-2" id="warna" name="warna" data-size="5">
                                                                         <option value="" selected>---- Pilih Warna ----</option>
                                                                         @foreach ($warna as $warna)
-                                                                        <option value="{{ $warna->nama_warna }}">{{ $warna->nama_warna }}</option>
+                                                                        <option value="{{ $warna->id_warna }}">{{ $warna->nama_warna }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                     <label for="bahan" class="form-label">Bahan</label>
                                                                     <select class="form-control mb-2" id="bahan" name="bahan" data-size="5">
                                                                         <option value="" selected>---- Pilih Bahan ----</option>
                                                                         @foreach ($bahan as $bahan)
-                                                                        <option value="{{ $bahan->nama_bahan }}">{{ $bahan->nama_bahan }}</option>
+                                                                        <option value="{{ $bahan->id_bahan }}">{{ $bahan->nama_bahan }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                     <div class="form-check mt-3 ml-2">
@@ -200,7 +204,13 @@
                 </div>
             </div>
         </div>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- tampil error message gagal hapus produk -->
+@if(session('error'))
+    <script>
+        alert("{{ session('error') }}");
+    </script>
+@endif
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
         var quantityInput = $('#jumlah');
@@ -312,11 +322,29 @@
         height: auto;
     }
     .carousel-indicators li {
-        background-color: #BCA987;
+        background-color: #E9EFFF;
     }
 
     .carousel-indicators .active {
-        background-color: #867555;
+        background-color: #C2A875;
+    }
+    .carousel-control-prev,
+    .carousel-control-next {
+        font-size: 20px;
+        padding: 10px;
+    }
+    .carousel-control-icon-bg {
+        background-color: #C2A875;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+    }
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        color: #FF0000;
     }
 </style>
 @endsection

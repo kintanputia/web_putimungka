@@ -30,6 +30,7 @@ class CityOngkirSeeder extends Seeder
 
                 $data = [
                     'province_id'   => $province->id,
+                    'city_id'       => $city['city_id'],
                     'type'          => $city['type'],
                     'name'          => $city['type'] . ' ' . $city['city_name'],
                     'postal_code'   => $city['postal_code'],

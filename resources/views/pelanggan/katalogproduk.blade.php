@@ -12,27 +12,31 @@
                     <!-- upp -->
                     <div class="container">
                         <div class="row">
-                            @foreach($data as $data)
+                            @foreach($produk as $d)
                             <div class="col-md-4 col-sm-6">
-                                <div class="card mb-30"><a class="card-img-tiles" href="/katalogadmin/{{ $data->id }}" data-abc="true">
+                                <div class="card mb-30"><a class="card-img-tiles" href="/katalogadmin/{{ $d->id }}" data-abc="true">
                                     <div class="inner">
-                                    <?php $arrfoto=(array)json_decode($data->foto,true);  ?>
+                                    <?php $arrfoto=(array)json_decode($d->foto,true);  ?>
                                     @foreach ($arrfoto as $value)
                                         @if ($loop->first)
                                             <?php $pic1=$value  ?>
                                         @endif
                                     @endforeach
-                                    <div class="main-img"><img src="{{ url('fotoproduk')}}/{{ $pic1 }}" alt="Category"></div>
+                                    <div class="main-img">
+                                        <img class="product-image" src="{{ url('fotoproduk')}}/{{ $pic1 }}" alt="Category"></div>
                                     </div></a>
                                 <div class="card-body text-center">
-                                    <h4 class="card-title">{{ ucwords($data->nama_produk) }}</h4>
-                                    <p class="text-muted">Rp. {{ number_format($data->harga) }}</p>
-                                    <a class="btn btn-outline-primary btn-sm" href="/katalogproduk/{{ $data->id }}" data-abc="true">Lihat Produk</a>
+                                    <h4 class="card-title">{{ ucwords($d->nama_produk) }}</h4>
+                                    <p class="text-muted">Rp. {{ number_format($d->harga) }}</p>
+                                    <a class="btn btn-outline-primary btn-sm" href="/katalogproduk/{{ $d->id }}" data-abc="true">Lihat Produk</a>
                                 </div>
                                 </div>
                             </div>
                             @endforeach
                         </div>
+                    </div>
+                    <div>
+                        {!! $produk->links() !!}
                     </div>
                     <!-- dow -->
                 </div>
@@ -40,3 +44,22 @@
         </div>
     </div>
 </x-app-layout>
+
+<style>
+    .product-image {
+        width: 150px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background-color: #f0f0f0;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+    }
+</style>

@@ -21,10 +21,16 @@ class CreateDetailTransaksisTable extends Migration
                                     ->onDelete('cascade');
             $table->unsignedBigInteger('id_produk');
             $table->foreign('id_produk')->references('id')->on('produks')
-                                    ->onUpdate('cascade')
+                                    ->onUpdate('restrict')
                                     ->onDelete('cascade');
-            $table->string('nama_warna');
-            $table->string('nama_bahan');
+            $table->unsignedBigInteger('warna');
+            $table->foreign('warna')->references('id')->on('warnas')
+                                    ->onUpdate('restrict')
+                                    ->onDelete('restrict');
+            $table->unsignedBigInteger('bahan');
+            $table->foreign('bahan')->references('id')->on('bahans')
+                                    ->onUpdate('restrict')
+                                    ->onDelete('restrict');
             $table->integer('jumlah');
             $table->boolean('tambahan_motif');
             $table->integer('harga_produk');

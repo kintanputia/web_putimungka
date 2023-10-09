@@ -10,7 +10,7 @@ class UserController extends Controller
     public function index(){
         $data = DB::table('pelanggans')->orderby('id', 'desc')
                     ->join('users', 'users.id', '=', 'pelanggans.id_user')
-                    ->get();
+                    ->paginate(5);
         return view('admin.pengguna', ['data'=>$data]);
     }
     // halaman edit profil pelanggan admin

@@ -16,6 +16,7 @@ class CreateCityOngkirsTable extends Migration
         Schema::create('city_ongkirs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('province_id');
+            $table->unsignedInteger('city_id');
             $table->string('type');
             $table->string('name');
             $table->string('postal_code');

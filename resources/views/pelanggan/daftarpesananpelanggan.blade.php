@@ -22,21 +22,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($data as $key => $data)
+                            @foreach ($data as $key => $d)
                                 <tr>
                                 <th>{{ ++$key }}</th>
-                                <td>{{ $data->tgl_pesan }}</td>
+                                <td>{{ $d->tgl_pesan }}</td>
                                 <td>
-                                    @if ($data->tgl_selesai == null)
+                                    @if ($d->tgl_selesai == null)
                                         -
                                     @else
-                                        {{ $data->tgl_selesai }}
+                                        {{ $d->tgl_selesai }}
                                     @endif
                                 </td>
-                                <td>{{ number_format($data->total_belanja) }}</td>
-                                <td>{{ $data->status_transaksi }}</td>
+                                <td>{{ number_format($d->total_belanja) }}</td>
+                                <td>{{ $d->status_transaksi }}</td>
                                 <td>
-                                    <a href="/detailpesananpel/{{ $data->id }}">
+                                    <a href="/detailpesananpel/{{ $d->id }}">
                                     <button class="btn btn-success btn-sm"><i class="fa fa-info" aria-hidden="true"></i>
                                     </button>
                                     </a>
@@ -45,7 +45,10 @@
                             @endforeach
                         </tbody>
                         </table>
-                                            <!-- downnn -->
+                        <div>
+                            {!! $data->links() !!}
+                        </div>
+                        <!-- downnn -->
                 </div>
             </div>
         </div>

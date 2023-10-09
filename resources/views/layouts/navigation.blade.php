@@ -27,7 +27,16 @@
             <div class="hidden sm:flex sm:items-center sm:ml-6">
                 <div class="mr-4 border-r border-gray-300 pr-4">
                 <x-nav-link :href="route('keranjangpelanggan', ['id' => Auth::user()->id])">
+                <div style="position: relative;">
                     <i class="fas fa-shopping-cart fa-lg"></i>
+                    @php
+                    $cartQuantity = 0;
+                    @endphp
+                    <input type="hidden" id="cart-quantity" value="{{ $cartQuantity }}">
+                    <span id="cart-quantity-badge" style="position: absolute; top: -12px; right: -12px; background-color: red; color: white; border-radius: 50%; padding: 5px; width: 20px; height: 20px; text-align: center; font-size: 10px; display: flex; justify-content: center; align-items: center;">
+                        {{ $cartQuantity }}
+                    </span>
+                </div>
                 </x-nav-link>
                 </div>
                 
@@ -103,3 +112,31 @@
         </div>
     </div>
 </nav>
+
+<script>
+    function updateCartQuantity() {
+        $.ajax({
+            type: "GET",
+            url: "{{ route('get.cartQuantity') }}",
+            dataType: "json",
+            success: function (response) {
+                var newCartQuantity = response.cartQuantity;
+                $("#cart-quantity").val(newCartQuantity);
+                var cartBadge = $("#cart-quantity-badge");
+                if (newCartQuantity > 0) {
+                    cartBadge.text(newCartQuantity);
+                    cartBadge.show();
+                } else {
+                    cartBadge.hide();
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching cart quantity: " + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        updateCartQuantity();
+    });
+</script>

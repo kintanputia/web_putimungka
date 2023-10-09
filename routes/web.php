@@ -57,6 +57,7 @@ Route::get('/batalkanpesananadm/{id}', [PesananController::class, 'batal_pesanan
 Route::get('/selesaikanpesananadm/{id}', [PesananController::class, 'selesai_pesanan_admin']);
 Route::post('/updateStatus', [PesananController::class, 'update_status_admin']);
 Route::get('/keranjangadmin/{id}', [KeranjangController::class,'isi_keranjang_admin'])->name('keranjangadmin');
+Route::get('generate-invoice/{id}', [PesananController::class, 'generateInvoicePdf'])->name('generate.invoice');
 
 // Pelanggan
 Route::get('/katalogproduk', [KatalogController::class,'index_propel'])->name('katalogproduk');
@@ -79,5 +80,6 @@ Route::get('/daftarpesanan', [PesananController::class,'index_pesanan'])->name('
 Route::get('/detailpesananpel/{id}', [PesananController::class, 'detail_pesanan_pelanggan']);
 Route::post('/addBuktiBayar', [PesananController::class, 'insert_bukti_bayar']);
 Route::get('/selesaikanpesananpel/{id}', [PesananController::class, 'selesai_pesanan_pelanggan']);
+Route::get('getCartQuantity', [KeranjangController::class,'cart_quantity'])->name('get.cartQuantity');
 
 require __DIR__.'/auth.php';

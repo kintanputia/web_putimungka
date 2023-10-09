@@ -25,17 +25,29 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-        // rememberme
+    
+        $re = $request->only('email', 'password');
         $ingat = $request->rememberme ? true : false;
-        $re = $request->only('email','password');
-        if (Auth::attempt($re,$ingat)) {
+    
+        if (Auth::attempt($re, $ingat)) {
             if (Auth()->user()->role == 'admin') {
                 return redirect('/dashboardadmin');
-            }else if (Auth()->user()->role == 'pelanggan') {
+            } else if (Auth()->user()->role == 'pelanggan') {
                 return redirect('/dashboard');
             }
-        }else{
-            return redirect('/')->with('status', 'email atau password anda salah');
+        } else {
+            $user = User::where('email', $re['email'])->first();
+            if (!$user) {
+                // user tidak ada
+                return redirect('/')
+                    ->with('status', 'User dengan email tersebut tidak ditemukan')
+                    ->withInput();
+            } else {
+                // password salah
+                return redirect('/')
+                    ->with('status', 'Email atau password Anda salah')
+                    ->withInput();
+            }
         }
     }
     public function profil_pelanggan ($id){

@@ -33,11 +33,10 @@
                                     <p>Warna : {{ $data->nama_warna }}</p>
                                     <p>Bahan : {{ $data->nama_bahan }}</p>
                                     
-                                    @if ($data->tambahan_motif === 0)
+                                    @if ($data->tambahan_motif === 1)
                                     <p><strong>*dengan tambahan motif</strong></p>
                                     @endif
-
-                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&nama_warna={{ $data->nama_warna }}&nama_bahan={{ $data->nama_bahan }}&harga_produk={{ $data->harga_produk }}">
+                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->warna }}&id_bahan={{ $data->bahan }}&harga_produk={{ $data->harga_produk }}">
                                         <button class="btn btn-danger btn-sm" onclick="return confirm('Apakah anda yakin ingin menghapus produk ini dari keranjang?');">
                                             <i class="fa fa-trash p-1" aria-hidden="true"></i>
                                         </button>
@@ -82,8 +81,8 @@
 
                                 $item = [
                                     'id_produk' => $data->id_produk,
-                                    'nama_warna' => $data->nama_warna,
-                                    'nama_bahan' => $data->nama_bahan,
+                                    'nama_warna' => $data->warna,
+                                    'nama_bahan' => $data->bahan,
                                     'harga_produk' => $data->harga_produk,
                                     'jumlah' => $data->jumlah,
                                     'tambahan_motif' => $data->tambahan_motif
@@ -231,6 +230,16 @@
                 province_id: id
                 },
                 success: function(data) {
+                    $('#city_id').empty();
+                    $('#kecamatan_id').empty();
+                    $('#kota_id').append($('<option>', {
+                        value: '',
+                        text: 'Pilih Kota/Kabupaten'
+                    }));
+                    $('#kecamatan_id').append($('<option>', {
+                        value: '',
+                        text: 'Pilih kecamatan'
+                    }));
                     $('#form-kota').html(data);
                     }
                 })
@@ -329,7 +338,7 @@
                     e.preventDefault();
                     $("#pengirimanPH").text(0);
                     $("#layananEkspedisiPH").text('');
-                    let origin = '446' //id kota pyk pada database rajaongkir
+                    let origin = $('#origin_city').val();
                     let destination = $('#destination_city').val();
                     let courier = $('#courier').val();
                     let weight = $('#weight').val();
@@ -339,6 +348,7 @@
                     }else if (destination == ''){
                         alert('Kota tujuan belum diisi');
                     }else { 
+                        console.log(origin, destination, courier, weight);
                     $.ajax({
                         url: "{{ route('check-ongkir') }}",
                         type: 'POST',
@@ -355,6 +365,7 @@
                             $('#checkBtn').attr('disabled', true);
                         },
                         success: function(response){
+                            console.log(JSON.stringify (response));
                             $('#result').removeClass('d-none');
                             $('#checkBtn').html('Check Ongkir');
                             $('#checkBtn').attr('disabled', false);
@@ -479,11 +490,11 @@
             kode_pos = '';
         } else {
             kirim_ekspedisi = 1;
-            alamat = document.getElementById('alamat').val();
+            alamat = document.getElementById('alamat').value;
             d = document.getElementById('province_id');
             get_kota = document.getElementById('city_id');
             get_kecamatan = document.getElementById('kecamatan_id');
-            kode_pos = document.getElementById('kode_pos').val();
+            kode_pos = document.getElementById('kode_pos').value;
             selectedOptionKota = get_kota.options[get_kota.selectedIndex];
             selectedOptionKecamatan = get_kecamatan.options[get_kecamatan.selectedIndex];
             selectedOptionProvinsi = d.options[d.selectedIndex];

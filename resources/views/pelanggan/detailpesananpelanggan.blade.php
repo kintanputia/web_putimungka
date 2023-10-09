@@ -14,17 +14,17 @@
                         <tbody>
                             <tr>
                                 <th>Tanggal Pemesan</th>
-                                <td>:</td>
+                                <td></td>
                                 <td>{{ $detail->tgl_pesan }}</td>
                             </tr>
                             <tr>
                                 <th>Tanggal Selesai</th>
-                                <td>:</td>
+                                <td></td>
                                 <td>{{ $detail->tgl_selesai}}</td>
                             </tr>
                             <tr>
                                 <th>Distribusi Barang</th>
-                                <td>:</td>
+                                <td></td>
                                 <td>
                                     @if($detail->kirim_ekspedisi == 1)
                                         @php
@@ -42,14 +42,30 @@
                                     {{ $dikirim }}
                                 </td>
                             </tr>
+                            @if ($detail->kirim_ekspedisi == 1)
+                                <tr>
+                                    <th>Layanan Ekspedisi</th>
+                                    <td></td>
+                                    <td>
+                                        {{ $detail->layanan_ekspedisi }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ongkos Kirim</th>
+                                    <td></td>
+                                    <td>
+                                    Rp. {{ number_format($detail->biaya_ongkir) }}
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <th>Total Belanja</th>
-                                <td>:</td>
+                                <td></td>
                                 <td>Rp. {{ number_format($detail->total_belanja) }}</td>
                             </tr>
                             <tr>
                                 <th>Status Transaksi</th>
-                                <td>:</td>
+                                <td></td>
                                 <td>{{ $detail->status_transaksi }}</td>
                             </tr>
                                 <tr>
@@ -80,7 +96,32 @@
                                 </tr>
                         </tbody>        
                     </table>
-                    <p class="mt-3"><strong>Daftar Pesanan</strong></p>                  
+                    @if($detail->kirim_ekspedisi == 1)
+                        <h6 class="mt-2 ml-2"><strong><span style="color: blue;">Alamat Pengiriman</span></strong></h6>
+                        <table class="table p-2">
+                            <tr>
+                                <th>Alamat</th>
+                                <td>{{ $detail->alamat }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kecamatan</th>
+                                <td>{{ $detail->kecamatan_tujuan }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kota/Kabupaten</th>
+                                <td>{{ $detail->kota_tujuan }}</td>
+                            </tr>
+                            <tr>
+                                <th>Provinsi</th>
+                                <td>{{ $detail->provinsi_tujuan }}</td>
+                            </tr>
+                            <tr>
+                                <th>Kode Pos</th>
+                                <td>{{ $detail->kode_pos }}</td>
+                            </tr>
+                        </table>
+                        @endif
+                    <p class="mt-5"><strong>Daftar Pesanan</strong></p>                  
                     <table class="table">
                         <thead>
                             <tr>
@@ -88,6 +129,7 @@
                             <th scope="col">Nama Produk</th>
                             <th scope="col">Warna</th>
                             <th scope="col">Bahan</th>
+                            <th scope="col">Tambahan Motif</th>
                             <th scope="col">Jumlah</th>
                             <th scope="col">Harga (per item)</th>
                             </tr>
@@ -99,7 +141,14 @@
                                 <td>{{$data->nama_produk}}</td>
                                 <td>{{$data->nama_warna}}</td>
                                 <td>{{$data->nama_bahan}}</td>
-                                <td>{{$data->jumlah}}</td>
+                                @php
+                                    $tambahMotif = 'Tidak';
+                                    if ($data->tambahan_motif === 1) {
+                                        $tambahMotif = 'Ya';
+                                    }
+                                @endphp
+                                <td>{{ $tambahMotif }}</td>
+                                <td>{{ $data->jumlah }}</td>
                                 <td>{{ number_format($data->harga_produk)}}</td>
                             </tr>   
                             @endforeach

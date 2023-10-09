@@ -32,7 +32,12 @@
                 </div>
             </div>
         </div>
-
+<!-- tampil error message gagal hapus produk -->
+@if(session('error'))
+    <script>
+        alert("{{ session('error') }}");
+    </script>
+@endif
 <!-- ajax insert lokasi baru -->
 <script>
     $('#btn_tambah_bahan').on('click', function() {
