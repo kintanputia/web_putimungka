@@ -79,7 +79,7 @@
                         ID Trsansaksi
                     </th>
                     <td>
-                        {{ $detail->id }}
+                        {{ $detail->id_transaksi }}
                     </td>
                 </tr>
                 <tr>

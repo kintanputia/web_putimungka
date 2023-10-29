@@ -105,15 +105,15 @@
                             </tr>
                             <tr>
                                 <th>Kecamatan</th>
-                                <td>{{ $detail->kecamatan_tujuan }}</td>
+                                <td>{{ $detail->nama_kecamatan }}</td>
                             </tr>
                             <tr>
                                 <th>Kota/Kabupaten</th>
-                                <td>{{ $detail->kota_tujuan }}</td>
+                                <td>{{ $detail->nama_kota }}</td>
                             </tr>
                             <tr>
                                 <th>Provinsi</th>
-                                <td>{{ $detail->provinsi_tujuan }}</td>
+                                <td>{{ $detail->nama_provinsi }}</td>
                             </tr>
                             <tr>
                                 <th>Kode Pos</th>
@@ -157,7 +157,9 @@
                       <label for="note" class="block text-sm font-medium text-gray-700"> Catatan Pesanan</label>
                       <textarea name="note" id="note" rows="8" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" disabled >{{ $detail->note_transaksi }}</textarea>
                       @if ($detail->status_transaksi === 'Belum Dibayar')
-                      <button class="btn btn-danger btn-sm float-right mt-5 mb-3" id="batalpesanan" name="batalpesanan">Batalkan Pesanan</button>
+                        <a href="/batalkanpesananbypel/{{ $detail->id_transaksi }}">
+                                <button class="btn btn-danger btn-sm float-right mt-5 mb-3" id="batalpesanan" name="batalpesanan" onclick="return confirm('Apakah anda yakin ingin membatalkan pesanan ini?')">Batalkan Pesanan</button>
+                            </a>
                       @elseif ($detail->status_transaksi === 'Sedang Dikirim')
                         <a href="/selesaikanpesananpel/{{ $detail->id }}">
                             <button class="btn btn-success btn-sm float-right mt-5 mb-3" id="selesaipesanan" name="selesaipesanan" onclick="return confirm('Apakah anda yakin pesanan anda telah sesuai?')">Pesanan Diterima</button>
@@ -171,7 +173,7 @@
 
 <script>
     let uploadBtn = document.getElementById('uploadBtn');
-    let id_transaksi = {{ $detail->id }} ;
+    let id_transaksi = {{ $detail->id_transaksi }} ;
     uploadBtn.addEventListener('click', function() {
         var form = document.getElementById("up_buktibayar");
         var formData = new FormData(form);
@@ -181,7 +183,7 @@
         }
         console.log([...formData.entries()]);
         $.ajax({
-                url: "/addBuktiBayar",
+                url: "/addBuktiBayarPel",
                 type: "POST",
                 processData: false,
                 contentType: false,

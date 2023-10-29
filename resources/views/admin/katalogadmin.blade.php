@@ -29,7 +29,7 @@
                 <div class="row">
                     @foreach($produk as $data)
                     <div class="col-md-4 col-sm-6">
-                        <div class="card mb-30"><a class="card-img-tiles" href="/katalogadmin/{{ $data->id }}" data-abc="true">
+                        <div class="card mb-30"><a class="card-img-tiles" href="/katalogadmin/{{ $data->id_produk }}" data-abc="true">
                             <div class="inner">
                                 <?php $arrfoto=(array)json_decode($data->foto,true);  ?>
                                 @foreach ($arrfoto as $value)
@@ -47,7 +47,7 @@
                         <div class="card-body text-center">
                             <h4 class="card-title">{{ ucwords($data->nama_produk) }}</h4>
                             <p class="text-muted">Rp. {{ number_format($data->harga) }}</p>
-                            <a class="btn btn-outline-primary btn-sm" href="/katalogadmin/{{ $data->id }}" data-abc="true">Lihat Produk</a>
+                            <a class="btn btn-outline-primary btn-sm" href="/katalogadmin/{{ $data->id_produk }}" data-abc="true">Lihat Produk</a>
                         </div>
                         </div>
                     </div>

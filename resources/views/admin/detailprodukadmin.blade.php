@@ -126,11 +126,11 @@
                                                         <button type="button" class="btn btn-info btn-sm float-left mr-2" id="btn_tmbh_keranjang" data-toggle="modal" data-target="#tambahkeranjang" >
                                                         <i class="fa fa-shopping-cart p-1" aria-hidden="true"></i>Tambah ke Keranjang
                                                         </button>
-                                                        <a href="/deleteproduk/{{ $informasi->id }}">
+                                                        <a href="/deleteproduk/{{ $informasi->id_produk }}">
                                                         <button class="btn btn-danger btn-sm float-right" onclick="return confirm('Apakah anda yakin ingin menghapus produk ini?');">
                                                         <i class="fa fa-trash p-1" aria-hidden="true"></i>Hapus
                                                         </button></a>
-                                                        <a href="/editproduk/{{ $informasi->id }}">
+                                                        <a href="/editproduk/{{ $informasi->id_produk }}">
                                                         <button class="btn btn-warning btn-sm float-right mr-2">
                                                         <i class="fa fa-pencil p-1" aria-hidden="true"></i>Edit
                                                         </button></a>
@@ -149,7 +149,7 @@
                                                                 <form method="post" name="frm_addker" id="frm_addker" action="/tambahkeranjang" enctype="multipart/form-data" onsubmit="validasi()">
                                                                 @csrf
                                                                     <input type="hidden" name="id_user" id="id_user" value="{{ Auth::user()->id }}">
-                                                                    <input type="hidden" name="id_produk" id="id_produk" value="{{ $informasi->id }}">
+                                                                    <input type="hidden" name="id_produk" id="id_produk" value="{{ $informasi->id_produk }}">
                                                                     <div class="form-group">
                                                                         <div class="text-center">
                                                                             <label for="quantity" style="display: inline-block;">Quantity:</label>

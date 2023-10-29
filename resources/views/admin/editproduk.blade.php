@@ -13,7 +13,7 @@
                                     <b>Edit Produk Kerajinan</b>
                                     </h3>
                                     <div class="grid grid-cols-6 gap-6">
-                                    <input type="hidden" name="id" value="{{ $detail->id }}">
+                                    <input type="hidden" name="id" value="{{ $detail->id_produk }}">
                                     <div class="col-span-6 sm:col-span-4 p-3">
                                         <label for="nama_produk" class="block text-sm font-medium text-gray-700">Nama Produk</label>
                                         <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md form-control" name="nama_produk" id="nama_produk" placeholder="Nama Produk" value="{{ $detail->nama_produk }}" required>
@@ -147,6 +147,7 @@
 <script>
     // warna
     var selectedColors = [];
+    var removedColors = [];
     var jsonW = @json($warna);
     var w = jsonW.map(function(item) {
         return item.id_warna;
@@ -167,7 +168,7 @@
         var warnat = $('#warna'+i+' :selected').text();
         d.forEach(function (warna) {
             if (warnat === warna.nama_warna) {
-                selectedColors.push(warna.id); //bahan terpilih masuk array
+                selectedColors.push(warna.id); //warna terpilih masuk array
             }
         });
         console.log(selectedColors);
@@ -209,6 +210,8 @@
                 console.log("Before removal: selectedColors =", selectedColors);
                 selectedColors = selectedColors.filter(item => item !== h.id);
                 console.log("After removal: selectedColors =", selectedColors);
+                removedColors.push(h.id);
+                console.log("Removed Color =", removedColors);
             }
         });
         // $('#row-warna' + rowIdW).remove();
@@ -216,6 +219,7 @@
         }
     });
     // bahan
+    var removedMaterials = [];
     var selectedMaterials = [];
     var jsonB = @json($bahan);
     var b = jsonB.map(function(item) {
@@ -279,6 +283,7 @@
                 console.log("Before removal: selectedMaterials =", selectedMaterials);
                 selectedMaterials = selectedMaterials.filter(item => item !== h.id);
                 console.log("After removal: selectedMaterials =", selectedMaterials);
+                removedMaterials.push(h.id);
             }
         });
         // $('#row-bahan' + rowIdW).remove();
@@ -390,6 +395,8 @@
             console.log(selectedMaterials);
             formData.append('selectedColors', selectedColors);
             formData.append('selectedMaterial', selectedMaterials);
+            formData.append('removedColors', removedColors);
+            formData.append('removedMaterial', removedMaterials);
             console.log(formData);
 
             $.ajax({

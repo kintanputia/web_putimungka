@@ -35,7 +35,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="provinsi" name="provinsi">
                                                 @foreach ($allProvinces as $p)
-                                                    <option value="{{ $p->id }}" {{ $nama_provinsi == $p->id ? 'selected' : '' }}>
+                                                    <option value="{{ $p->id }}" {{ $data->id_provinsi == $p->id ? 'selected' : '' }}>
                                                         {{ $p->name }}
                                                     </option>
                                                 @endforeach
@@ -44,7 +44,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="kota" name="kota">
                                                 @foreach ($allCities as $k)
-                                                    <option value="{{ $k->id }}" {{ $nama_kota == $k->id ? 'selected' : '' }}>
+                                                    <option value="{{ $k->id }}" {{ $data->id_kota == $k->id ? 'selected' : '' }}>
                                                         {{ $k->name }}
                                                     </option>
                                                 @endforeach
@@ -53,7 +53,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="kecamatan" name="kecamatan">
                                                 @foreach ($allKecamatan as $kc)
-                                                    <option value="{{ $kc->id }}" {{ $nama_kecamatan == $kc->id ? 'selected' : '' }}>
+                                                    <option value="{{ $kc->id }}" {{ $data->id_kecamatan == $kc->id ? 'selected' : '' }}>
                                                         {{ $kc->name }}
                                                     </option>
                                                 @endforeach
@@ -66,6 +66,7 @@
                                     </div>
                                 </div>
                                 <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                                    <input type="hidden" id="id_pelanggan" name='id_pelanggan' value="{{ $data->id_pelanggan }}">
                                     <button type="button" id="btn_submit" class="btn btn-primary" style="background-color: #2C73D2;" onclick="validasi()">Simpan</button>
                                 </div>
                             </div>

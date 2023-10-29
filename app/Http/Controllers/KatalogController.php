@@ -7,13 +7,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class KatalogController extends Controller
-{
+{   
+    public function index_tl(){
+        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
+        return view('katalogtl', ['produk'=>$data]);
+    }
     public function index(){
-        $data = DB::table('produks')->orderby('id', 'desc')->paginate(15);
+        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
         return view('admin.katalogadmin', ['produk'=>$data]);
     }
     public function index_propel(){
-        $data = DB::table('produks')->orderby('id', 'desc')->paginate(15);
+        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
         return view('pelanggan.katalogproduk', ['produk'=>$data]);
     }
     public function index_warna(){
@@ -64,29 +68,53 @@ class KatalogController extends Controller
             ]);
         }
     }
-    public function detaildproduk($id){
-        $informasi = DB::table('produks')->where('id', $id)->first();
-        $warna = DB::table('warna_produks')
+    public function detail_produk_tl($id){
+        $informasi = DB::table('produks')->where('id_produk', $id)->first();
+        $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
-                        ->join('warnas', 'warna_produks.id_warna', '=', 'warnas.id')
+                        ->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')
+                        ->select('id_warna', 'nama_warna')
+                        ->distinct()
                         ->get();
-        $bahan = DB::table('bahan_produks')
+        $bahan = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
-                        ->join('bahans', 'bahan_produks.id_bahan', '=', 'bahans.id')
+                        ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
+                        ->select('id_bahan', 'nama_bahan')
+                        ->distinct()
+                        ->get();
+        return view('detailproduktl', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan]);
+    }
+    public function detaildproduk($id){
+        $informasi = DB::table('produks')->where('id_produk', $id)->first();
+        $warna = DB::table('warna_bahan_produks')
+                        ->where('id_produk', $id)
+                        ->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')
+                        ->select('id_warna', 'nama_warna')
+                        ->distinct()
+                        ->get();
+        $bahan = DB::table('warna_bahan_produks')
+                        ->where('id_produk', $id)
+                        ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
+                        ->select('id_bahan', 'nama_bahan')
+                        ->distinct()
                         ->get();
         return view('admin.detailprodukadmin', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan]);
     }
     public function detailprodukpel($id){
         $id_user = Auth::user()->id;
-        $informasi = DB::table('produks')->where('id', $id)->first();
+        $informasi = DB::table('produks')->where('id_produk', $id)->first();
         $pelanggan = DB::table('pelanggans')->where('id_user', $id_user)->first();
-        $warna = DB::table('warna_produks')
+        $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
-                        ->join('warnas', 'warna_produks.id_warna', '=', 'warnas.id')
+                        ->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')
+                        ->select('id_warna', 'nama_warna')
+                        ->distinct()
                         ->get();
-        $bahan = DB::table('bahan_produks')
+        $bahan = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
-                        ->join('bahans', 'bahan_produks.id_bahan', '=', 'bahans.id')
+                        ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
+                        ->select('id_bahan', 'nama_bahan')
+                        ->distinct()
                         ->get();
         return view('pelanggan.detailproduk', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan, 'pelanggan'=>$pelanggan]);
     }
@@ -145,17 +173,14 @@ class KatalogController extends Controller
             'foto'=>$nama_foto
             ]);
         if ($simpan){
-            foreach ($warnaArray as $warna) {
-                DB::table('warna_produks')->insert([
-                    'id_produk'=>$simpan,
-                    'id_warna'=>$warna
-                    ]);
-            }
             foreach ($bahanArray as $bahan) {
-                DB::table('bahan_produks')->insert([
-                    'id_produk'=>$simpan,
-                    'id_bahan'=>$bahan
+                foreach ($warnaArray as $warna) {
+                    DB::table('warna_bahan_produks')->insert([
+                        'id_produk'=>$simpan,
+                        'id_bahan'=>$bahan,
+                        'id_warna'=>$warna
                     ]);
+                }
             }
             return redirect()->action([KatalogController::class, 'index']);
         }
@@ -196,7 +221,7 @@ class KatalogController extends Controller
     public function destroy_produk($id)
     {
         try {
-            $hapus = DB::table('produks')->where('id', $id)->delete();
+            $hapus = DB::table('produks')->where('id_produk', $id)->delete();
     
             if ($hapus) {
                 return redirect()->action([KatalogController::class, 'index']);
@@ -209,9 +234,9 @@ class KatalogController extends Controller
     }
     public function edit_produk($id)
     {
-        $detail = DB::table('produks')->orderBy('produks.id', 'asc')->where('produks.id', $id)->first();
-        $bahan = DB::table('bahan_produks')->join('bahans', 'bahan_produks.id_bahan', '=', 'bahans.id')->where('bahan_produks.id_produk', $id)->get();
-        $warna = DB::table('warna_produks')->join('warnas', 'warna_produks.id_warna', '=', 'warnas.id')->where('warna_produks.id_produk', $id)->get();
+        $detail = DB::table('produks')->orderBy('produks.id_produk', 'asc')->where('produks.id_produk', $id)->first();
+        $bahan = DB::table('warna_bahan_produks')->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')->select('id_bahan', 'nama_bahan')->where('warna_bahan_produks.id_produk', $id)->distinct()->get();
+        $warna = DB::table('warna_bahan_produks')->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')->select('id_warna', 'nama_warna')->where('warna_bahan_produks.id_produk', $id)->distinct()->get();
         $allColors = DB::table('warnas')->get();
         $allMaterials = DB::table('bahans')->get();
         return view ('admin.editproduk', ['detail'=>$detail, 'warna'=>$warna, 'bahan'=>$bahan, 'allColors'=>$allColors, 'allMaterials'=>$allMaterials]);
@@ -231,7 +256,9 @@ class KatalogController extends Controller
             'foto'=>'max:10240',
             'foto.*' => 'image',
             'selectedColors'=> 'required',
-            'selectedMaterial'=> 'required'
+            'selectedMaterial'=> 'required',
+            'removedColors'=>'nullable',
+            'removedMaterial'=>'nullable'
         ],
         [
             'foto.max' => 'Ukuran foto melebihi 10 Mb'
@@ -257,7 +284,7 @@ class KatalogController extends Controller
                 $pics[] = $foto_name;
             }
             $nama_foto = json_encode($pics); //array->string
-            $edit1 = DB::table('produks')->where('id', $id)
+            $edit1 = DB::table('produks')->where('id_produk', $id)
                 ->update([
                     'nama_produk'=>$nama_produk, 
                     'harga'=>$harga, 
@@ -271,7 +298,7 @@ class KatalogController extends Controller
                     'foto'=>$nama_foto 
                 ]);
         }else{
-            $edit2 = DB::table('produks')->where('id', $id)
+            $edit2 = DB::table('produks')->where('id_produk', $id)
                 ->update([
                     'nama_produk'=>$nama_produk, 
                     'harga'=>$harga, 
@@ -288,20 +315,26 @@ class KatalogController extends Controller
         $bahArr = explode(',', $validatedData['selectedMaterial']);
         $warnaArray = array_unique($warArr);
         $bahanArray = array_unique($bahArr);
+        $HwarArr = explode(',', $validatedData['removedColors']);
+        $HbahArr = explode(',', $validatedData['removedMaterial']);
+        $HwarnaArray = array_unique($HwarArr);
+        $HbahanArray = array_unique($HbahArr);
         
-            DB::table('warna_produks')->where('id_produk', $id)->delete();
-            DB::table('bahan_produks')->where('id_produk', $id)->delete();
-            foreach ($warnaArray as $warna) {
-                DB::table('warna_produks')->insert([
-                    'id_produk'=>$id,
-                    'id_warna'=>$warna
-                    ]);
-            }
+        foreach($HwarnaArray as $hw){
+            DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_warna', $HwarnaArray)->delete();
+        }
+        foreach($HbahanArray as $hb){
+            DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_bahan', $HbahanArray)->delete();
+        }
+        // DB::table('warna_bahan_produks')->where('id_produk', $id)->delete();
             foreach ($bahanArray as $bahan) {
-                DB::table('bahan_produks')->insert([
-                    'id_produk'=>$id,
-                    'id_bahan'=>$bahan
+                foreach ($warnaArray as $warna) {
+                    DB::table('warna_bahan_produks')->updateOrInsert([
+                        'id_produk'=>$id,
+                        'id_bahan'=>$bahan,
+                        'id_warna'=>$warna
                     ]);
+                }
             }
             return redirect()->action([KatalogController::class, 'index']);
         

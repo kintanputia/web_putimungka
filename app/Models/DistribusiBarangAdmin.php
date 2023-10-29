@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaksi extends Model
+class DistribusiBarangAdmin extends Model
 {
     use HasFactory;
-    protected $perPage = 10;
 }

@@ -36,7 +36,7 @@
                                     @if ($data->tambahan_motif === 1)
                                     <p><strong>*dengan tambahan motif</strong></p>
                                     @endif
-                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->warna }}&id_bahan={{ $data->bahan }}&harga_produk={{ $data->harga_produk }}">
+                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->id_warna }}&id_bahan={{ $data->id_bahan }}&harga_produk={{ $data->harga_produk }}">
                                         <button class="btn btn-danger btn-sm" onclick="return confirm('Apakah anda yakin ingin menghapus produk ini dari keranjang?');">
                                             <i class="fa fa-trash p-1" aria-hidden="true"></i>
                                         </button>
@@ -81,8 +81,8 @@
 
                                 $item = [
                                     'id_produk' => $data->id_produk,
-                                    'nama_warna' => $data->warna,
-                                    'nama_bahan' => $data->bahan,
+                                    'id_warna' => $data->id_warna,
+                                    'id_bahan' => $data->id_bahan,
                                     'harga_produk' => $data->harga_produk,
                                     'jumlah' => $data->jumlah,
                                     'tambahan_motif' => $data->tambahan_motif
@@ -484,7 +484,7 @@
             layanan_ekspedisi = '',
             biaya_ongkir = 0,
             alamat = '';
-            kecamatan = '';
+            id_kecamatan = '';
             kota = '';
             provinsi = '';
             kode_pos = '';
@@ -501,14 +501,14 @@
             kota = selectedOptionKota.text;
             kecamatan = selectedOptionKecamatan.text;
             provinsi = selectedOptionProvinsi.text;
+            id_kecamatan = get_kecamatan.value;
         }
 
         biaya_ongkir = String(biaya_ongkir);
         let formattedTotalBelanja = total_belanja.replace(/,(?=\d{3}(?!\d))/g, '');
         let formattedBiayaOngkir = biaya_ongkir.replace(/,(?=\d{3}(?!\d))/g, '');
-        console.log(typeof(nopel), typeof(namaPel));
         $.ajax({
-            url: "{{ route('insert_pesanan') }}",
+            url: "{{ route('insert_pesanan_admin') }}",
             type: 'POST',
             dataType: 'json',
             data: {
@@ -518,7 +518,7 @@
             no_hp : nopel,
             total_belanja: formattedTotalBelanja,
             alamat: alamat,
-            kecamatan: kecamatan,
+            kecamatan: id_kecamatan,
             kota: kota,
             provinsi: provinsi,
             kode_pos: kode_pos,

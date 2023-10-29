@@ -14,6 +14,7 @@
                     <div class="col-md-8">
                         <div class="card mb-4">
                         <div class="card-body">
+                            <input type="hidden" id="id_alamat" value="{{ $pelanggan->id_alamat }}">
                             <!-- product card upp -->
                             @foreach($uniqueV as $data)
                                 <!-- Single item -->
@@ -42,7 +43,7 @@
                                     <p><strong>*dengan tambahan motif</strong></p>
                                     @endif
 
-                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->warna }}&id_bahan={{ $data->bahan }}&harga_produk={{ $data->harga_produk }}">
+                                    <a href="/deletekeranjang?id_produk={{ $data->id_produk }}&id_warna={{ $data->id_warna }}&id_bahan={{ $data->id_bahan }}&harga_produk={{ $data->harga_produk }}">
                                         <button class="btn btn-danger btn-sm" onclick="return confirm('Apakah anda yakin ingin menghapus produk ini dari keranjang?');">
                                             <i class="fa fa-trash p-1" aria-hidden="true"></i>
                                         </button>
@@ -87,8 +88,8 @@
 
                                 $item = [
                                     'id_produk' => $data->id_produk,
-                                    'nama_warna' => $data->warna,
-                                    'nama_bahan' => $data->bahan,
+                                    'nama_warna' => $data->id_warna,
+                                    'nama_bahan' => $data->id_bahan,
                                     'harga_produk' => $data->harga_produk,
                                     'jumlah' => $data->jumlah,
                                     'tambahan_motif' => $data->tambahan_motif
@@ -100,6 +101,7 @@
                         </div>
                         <div class="card mb-4">
                         <div class="card-body">
+                            <input type="hidden" id="id_pelanggan" value="{{ $pelanggan->id_pelanggan }}">
                             <input class="form-control" type="hidden" name="nama_pelanggan" id="nama_pelanggan" value="{{ $pelanggan->nama_pelanggan }}">
                             <input class="form-control" type="hidden" name="no_hp" id="no_hp" value="{{ $pelanggan->no_hp }}">
                             <p><strong>Pengiriman Barang</strong></p>
@@ -117,12 +119,12 @@
                                 </div>
                                 <div class="mb-2 ml-3 p-2">
                                     <input class="form-control" type="hidden" name="alamatpel" id="alamatpel" value="{{ $pelanggan->alamat }}">
-                                    <input class="form-control" type="hidden" name="kecamatanpel" id="kecamatanpel" value="{{ $pelanggan->district_name }}">
-                                    <input class="form-control" type="hidden" name="kotapel" id="kotapel" value="{{ $pelanggan->city_name }}">
-                                    <input class="form-control" type="hidden" name="provinsipel" id="provinsipel" value="{{ $pelanggan->province_name }}">
+                                    <input class="form-control" type="hidden" name="kecamatanpel" id="kecamatanpel" value="{{ $pelanggan->nama_kecamatan }}">
+                                    <input class="form-control" type="hidden" name="kotapel" id="kotapel" value="{{ $pelanggan->nama_kota }}">
+                                    <input class="form-control" type="hidden" name="provinsipel" id="provinsipel" value="{{ $pelanggan->nama_provinsi }}">
                                     <input class="form-control" type="hidden" name="kode_pospel" id="kode_pospel" value="{{ $pelanggan->kode_pos }}">
                                     <p id="labelTujuan"><strong>Kota/Kabupaten Tujuan (Berdasarkan data profil pelanggan)</strong></p>
-                                    <input class="form-control" type="text" id="destination_city" name="destination_city" value="{{ $pelanggan->city_name }}" disabled>
+                                    <input class="form-control" type="text" id="destination_city" name="destination_city" value="{{ $pelanggan->nama_kota }}" disabled>
                                 </div>
                                 <div class="mb-2 ml-3 p-2">
                                     <label for="courier" class="form-label">Courier</label>
@@ -173,7 +175,7 @@
                                             <label for="kode_pos" class="block text-sm font-medium text-gray-700">Kode Pos</label>
                                             <input type="number" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" name="kode_pos" id="kode_pos" placeholder="Kode Pos" value="" required>
                                         </div>
-                                        <button class="btn btn-success btn-sm float-right" onclick="save_alamat_baru()">Save</button>
+                                        <button class="btn btn-success btn-sm float-right" id="saveAlamat" onclick="save_alamat_baru()">Save</button>
                                     </div>
                             </div>
                         </div>
@@ -288,6 +290,58 @@
             document.getElementById("tambahAlamat").style.display="block";
         }
     }
+
+    function ajax_save_alamat(){
+        let kecamatan = document.getElementById('kecamatan_id');
+        var id_kecamatan = kecamatan.value;
+        let id_pelanggan = $('#id_pelanggan').val();
+        let c = document.getElementById('alamat').value;
+        let g = document.getElementById('kode_pos').value;
+        console.log(id_kecamatan,id_pelanggan);
+            $.ajax({
+                url: "{{ route('insert_alamat') }}",
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id_pelanggan:id_pelanggan,
+                    alamat: c,
+                    kecamatan: id_kecamatan,
+                    kode_pos: g
+                },
+                beforeSend: function(){
+                    $('#saveAlamat').html('Loading...');
+                    $('#saveAlamat').attr('disabled', true);
+                },
+                success: function (response) {
+                    var id_alamat = response.id_alamat;
+                    $('#id_alamat').val(id_alamat);
+                    if (response.statusCode === 200) {
+                        alert("Berhasil Menggunakan Alamat Baru");
+                        console.log(response.data);
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.status === 422) {
+                        var errors = xhr.responseJSON.errors;
+                        $('#validation-errors').html('');
+                        $.each(errors, function (key, value) {
+                            $('#validation-errors').append('<p>' + value + '</p>');
+                        });
+                    } else {
+                        alert("Gagal Menyimpan Alamat");
+                        console.log("Error Status: " + xhr.status);
+                        console.log("Error Status Text: " + xhr.statusText);
+                        console.log("Error Response Text: " + xhr.responseText);
+                    }
+                },
+                complete: function () {
+                    $('#saveAlamat').html('Save');
+                    $('#saveAlamat').attr('disabled', false);
+                }
+            });
+    }
+
     function save_alamat_baru(){
         $('#result').empty();
         let c = document.getElementById('alamat').value;
@@ -341,6 +395,7 @@
         }
         else {
             console.log('data sudah lengkap');
+            ajax_save_alamat();
             alert('Saat ini anda menggunakan alamat baru sebagai tujuan pengiriman');
             $('#destination_city').val(selectedKota);
             $('#alamatpel').val(c);
@@ -487,6 +542,7 @@
         let note_transaksi = $('#notes').val();
 
         var namaPel = $("#nama_pelanggan").val();
+        var idAlamat = $("#id_alamat").val();
         var nopel = $("#no_hp").val();
         
 
@@ -513,6 +569,7 @@
             data: {
             _token: "{{ csrf_token() }}",
             dataArray: dataArray,
+            id_alamat:idAlamat,
             nama_pelanggan : namaPel,
             no_hp : nopel,
             total_belanja: formattedTotalBelanja,

@@ -26,21 +26,18 @@ class KeranjangController extends Controller
         $add = DB::table('keranjangs')->insert([
             'id_user'=>$id_user,
             'id_produk'=>$id_produk,
-            'warna'=>$request->warna,
-            'bahan'=>$request->bahan,
+            'id_warna'=>$request->warna,
+            'id_bahan'=>$request->bahan,
             'jumlah'=>$request->jumlah,
             'harga_produk'=>$request->harga_produk,
             'tambahan_motif'=>$request->tambahan_motif
             ]);
-        // $cartQ = DB::table('keranjangs')->where('id_user', $id_user)->get();
-        // $cartQuantity = count($cartQ)-1;
-        // return response()->json(['cartQuantity' => $cartQuantity]);
     }
     public function isi_keranjang_admin($id){
         $data1 = DB::table('keranjangs')->where('id_user', $id)
-                    ->join('produks', 'produks.id', '=', 'keranjangs.id_produk')
-                    ->join('bahans', 'bahans.id', '=', 'keranjangs.bahan')
-                    ->join('warnas', 'warnas.id', '=', 'keranjangs.warna')
+                    ->join('produks', 'produks.id_produk', '=', 'keranjangs.id_produk')
+                    ->join('bahans', 'bahans.id', '=', 'keranjangs.id_bahan')
+                    ->join('warnas', 'warnas.id', '=', 'keranjangs.id_warna')
                     ->get();
         $provinsi = \Indonesia::allProvinces()->sortBy('name')->pluck('name', 'id');
         $route_get_kota = route('get.kota');
@@ -59,7 +56,7 @@ class KeranjangController extends Controller
 
             $found = false;
             foreach ($uniqueElements[$key] as &$uniqueItem) {
-                if ($uniqueItem->warna === $item->warna && $uniqueItem->bahan === $item->bahan && $uniqueItem->tambahan_motif === $item->tambahan_motif) {
+                if ($uniqueItem->id_warna === $item->id_warna && $uniqueItem->id_bahan === $item->id_bahan && $uniqueItem->tambahan_motif === $item->tambahan_motif) {
                     $uniqueItem->jumlah += $item->jumlah;
                     $found = true;
                     break;
@@ -82,20 +79,24 @@ class KeranjangController extends Controller
     }
     public function isi_keranjang($id){
         $pelanggan = DB::table('pelanggans')->where('id_user', $id)
-                        ->join('indonesia_cities', 'indonesia_cities.id', '=', 'pelanggans.id_kota' )
-                        ->join('indonesia_provinces', 'indonesia_provinces.id', '=', 'pelanggans.id_provinsi' )
-                        ->join('indonesia_districts', 'indonesia_districts.id', '=', 'pelanggans.id_kecamatan' )
-                        ->select(
-                            'pelanggans.*',
-                            'indonesia_cities.name as city_name',
-                            'indonesia_provinces.name as province_name',
-                            'indonesia_districts.name as district_name'
+                ->leftJoin('alamat_pelanggans', 'alamat_pelanggans.id_pelanggan', '=', 'pelanggans.id_pelanggan')
+                ->leftJoin('indonesia_districts', 'indonesia_districts.id', '=', 'alamat_pelanggans.id_kecamatan')
+                ->leftJoin('indonesia_cities', 'indonesia_cities.code', '=', 'indonesia_districts.city_code')
+                ->leftJoin('indonesia_provinces', 'indonesia_provinces.code', '=', 'indonesia_cities.province_code')
+                ->select('pelanggans.*',
+                         'alamat_pelanggans.*', 
+                        'indonesia_districts.id as id_kecamatan',
+                        'indonesia_districts.name as nama_kecamatan',
+                        'indonesia_cities.id as id_kota',
+                        'indonesia_cities.name as nama_kota',
+                        'indonesia_provinces.id as id_provinsi',
+                        'indonesia_provinces.name as nama_provinsi'
                         )
-                        ->first();
+                ->first();
         $data1 = DB::table('keranjangs')->where('id_user', $id)
-                    ->join('produks', 'produks.id', '=', 'keranjangs.id_produk')
-                    ->join('bahans', 'bahans.id', '=', 'keranjangs.bahan')
-                    ->join('warnas', 'warnas.id', '=', 'keranjangs.warna')
+                    ->join('produks', 'produks.id_produk', '=', 'keranjangs.id_produk')
+                    ->join('bahans', 'bahans.id', '=', 'keranjangs.id_bahan')
+                    ->join('warnas', 'warnas.id', '=', 'keranjangs.id_warna')
                     ->get();
         $provinsi = \Indonesia::allProvinces()->sortBy('name')->pluck('name', 'id');
         $route_get_kota = route('get.kota');
@@ -106,7 +107,7 @@ class KeranjangController extends Controller
 
         foreach ($data as $item) {
             $key = $item->id_produk;
-            $combination = $item->warna . '-' . $item->bahan;
+            $combination = $item->id_warna . '-' . $item->id_bahan;
 
             if (!isset($uniqueElements[$key])) {
                 $uniqueElements[$key] = [];
@@ -114,7 +115,7 @@ class KeranjangController extends Controller
 
             $found = false;
             foreach ($uniqueElements[$key] as &$uniqueItem) {
-                if ($uniqueItem->warna === $item->warna && $uniqueItem->bahan === $item->bahan && $uniqueItem->tambahan_motif === $item->tambahan_motif) {
+                if ($uniqueItem->id_warna === $item->id_warna && $uniqueItem->id_bahan === $item->id_bahan && $uniqueItem->tambahan_motif === $item->tambahan_motif) {
                     $uniqueItem->jumlah += $item->jumlah;
                     $found = true;
                     break;
@@ -157,8 +158,8 @@ class KeranjangController extends Controller
 
         DB::table('keranjangs')
             ->where('id_produk', $id_produk)
-            ->where('warna', $id_warna)
-            ->where('bahan', $id_bahan)
+            ->where('id_warna', $id_warna)
+            ->where('id_bahan', $id_bahan)
             ->where('harga_produk', $harga_produk)
             ->delete();
             
@@ -206,6 +207,27 @@ class KeranjangController extends Controller
                 'message' => $th->getMessage(),
                 'data'    => []
             ]);
+        }
+    }
+    public function insert_alamat_baru(Request $request){
+        $request->validate([
+            'id_pelanggan'=> 'required',
+            'kecamatan'=> 'required',
+            'alamat'=>'required',
+            'kode_pos'=> 'required'
+        ]);
+        $id_pelanggan = $request->id_pelanggan;
+        $add = DB::table('alamat_pelanggans')->insertGetId([
+            'id_pelanggan'=>$id_pelanggan,
+            'alamat'=>$request->alamat,
+            'id_kecamatan'=>$request->kecamatan,
+            'kode_pos'=>$request->kode_pos
+            ]);
+
+        if ($add) {
+            return response()->json(['message' => 'Alamat berhasil disimpan', 'id_alamat' => $add], 200);
+        } else {
+            return response()->json(['error' => 'Gagal menyimpan alamat'], 500);
         }
     }
 }

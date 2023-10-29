@@ -24,15 +24,15 @@
                         </div>
                         <div class="col-span-6 sm:col-span-4 p-3">
                                 <label for="Kecamatan" class="block text-sm font-medium text-gray-700">Kecamatan</label>
-                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $nama_kecamatan }}" disabled>
+                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $data->nama_kecamatan }}" disabled>
                         </div>
                         <div class="col-span-6 sm:col-span-4 p-3">
                                 <label for="kotakabupaten" class="block text-sm font-medium text-gray-700">Kota/Kabupaten</label>
-                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $nama_kota }}" disabled>
+                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $data->nama_kota }}" disabled>
                         </div>
                         <div class="col-span-6 sm:col-span-4 p-3">
                                 <label for="Provinsi" class="block text-sm font-medium text-gray-700">Provinsi</label>
-                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $nama_provinsi }}" disabled>
+                                <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value="{{ $data->nama_provinsi }}" disabled>
                         </div>
                         <div class="col-span-6 sm:col-span-4 p-3">
                                 <label for="Kode Pos" class="block text-sm font-medium text-gray-700">Kode Pos</label>

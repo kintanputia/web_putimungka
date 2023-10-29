@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDetailTransaksisTable extends Migration
+class CreateDetailTransaksiPelanggansTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,22 +13,21 @@ class CreateDetailTransaksisTable extends Migration
      */
     public function up()
     {
-        Schema::create('detail_transaksis', function (Blueprint $table) {
-            $table->id();
+        Schema::create('detail_transaksi_pelanggans', function (Blueprint $table) {
             $table->unsignedBigInteger('id_transaksi');
-            $table->foreign('id_transaksi')->references('id')->on('transaksis')
+            $table->foreign('id_transaksi')->references('id_transaksi')->on('transaksi_pelanggans')
                                     ->onUpdate('cascade')
                                     ->onDelete('cascade');
             $table->unsignedBigInteger('id_produk');
-            $table->foreign('id_produk')->references('id')->on('produks')
-                                    ->onUpdate('restrict')
-                                    ->onDelete('cascade');
-            $table->unsignedBigInteger('warna');
-            $table->foreign('warna')->references('id')->on('warnas')
+            $table->foreign('id_produk')->references('id_produk')->on('warna_bahan_produks')
                                     ->onUpdate('restrict')
                                     ->onDelete('restrict');
-            $table->unsignedBigInteger('bahan');
-            $table->foreign('bahan')->references('id')->on('bahans')
+            $table->unsignedBigInteger('id_warna');
+            $table->foreign('id_warna')->references('id_warna')->on('warna_bahan_produks')
+                                    ->onUpdate('restrict')
+                                    ->onDelete('restrict');
+            $table->unsignedBigInteger('id_bahan');
+            $table->foreign('id_bahan')->references('id_bahan')->on('warna_bahan_produks')
                                     ->onUpdate('restrict')
                                     ->onDelete('restrict');
             $table->integer('jumlah');
@@ -45,6 +44,6 @@ class CreateDetailTransaksisTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('detail_transaksis');
+        Schema::dropIfExists('detail_transaksi_pelanggans');
     }
 }

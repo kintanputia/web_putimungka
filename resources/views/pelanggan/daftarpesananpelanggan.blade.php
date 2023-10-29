@@ -36,7 +36,7 @@
                                 <td>{{ number_format($d->total_belanja) }}</td>
                                 <td>{{ $d->status_transaksi }}</td>
                                 <td>
-                                    <a href="/detailpesananpel/{{ $d->id }}">
+                                    <a href="/detailpesananpel/{{ $d->id_transaksi }}">
                                     <button class="btn btn-success btn-sm"><i class="fa fa-info" aria-hidden="true"></i>
                                     </button>
                                     </a>

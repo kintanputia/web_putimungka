@@ -48,4 +48,9 @@
         margin-left: 20px;
     }
 </style>
+@if(session('error'))
+    <script>
+        alert("{{ session('error') }}");
+    </script>
+@endif
 @endsection
