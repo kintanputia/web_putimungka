@@ -95,62 +95,43 @@ class HasilPenjualanController extends Controller
     }
     public function generateLaporanPdf(Request $request)
     {
-            $request->validate([
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-            ]);
-            $laporan = DB::table('transaksis')
-                        ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksi_pelanggans.id_pelanggan')
-                        ->select('id_transaksi', 'nama_pelanggan','tgl_selesai', 'total_belanja')
-                        ->whereNotNull('tgl_selesai');
-                        // ->union(
-                        //     DB::table('transaksi_pelanggans')
-                        //         ->join('pelanggans', 'pelanggans.id_user', '=', 'transaksi_pelanggans.id_user')
-                        //         ->select('id_transaksi', 'nama_pelanggan','tgl_selesai', 'total_belanja')
-                        //         ->whereNotNull('tgl_selesai')
-                        // );
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
-            $start_date = $request->input('start_date');
-            $end_date = $request->input('end_date');
-    
-            $monthlySalesData1 = DB::table('transaksis')
-                                    ->select(
-                                        DB::raw('MONTH(tgl_selesai) as month'),
-                                        DB::raw('SUM(total_belanja) as total_sales')
-                                    )
-                                    ->whereNotNull('tgl_selesai');
-            
-            // $monthlySalesData2 = TransaksiPelanggan::select(
-            //     DB::raw('tgl_selesai as tgl_selesai'),
-            //     DB::raw('SUM(total_belanja) as total_sales')
-            // )
-            // ->whereNotNull('tgl_selesai');
-            
-            if ($start_date && $end_date) {
-                $laporan->whereBetween('tgl_selesai', [$start_date, $end_date]);
-                $monthlySalesData1->whereBetween('tgl_selesai', [$start_date, $end_date]);
-                $monthlySalesData2->whereBetween('tgl_selesai', [$start_date, $end_date]);
-            }
-            
-            $monthlySalesData1 = $monthlySalesData1
-                ->groupBy('tgl_selesai')
-                ->orderBy('tgl_selesai')
-                ->pluck('total_sales', 'tgl_selesai');
-            
-            // $monthlySalesData2 = $monthlySalesData2
-            //     ->groupBy('tgl_selesai')
-            //     ->orderBy('tgl_selesai')
-            //     ->pluck('total_sales', 'tgl_selesai');
+        $laporan = DB::table('transaksis')
+            ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksis.id_pelanggan')
+            ->select('id_transaksi', 'nama_pelanggan', 'tgl_selesai', 'total_belanja')
+            ->whereNotNull('tgl_selesai');
 
-            $penjualan = $laporan->get();
-            $monthlySalesData11 = $monthlySalesData1->toArray();
-            // $monthlySalesData22 = $monthlySalesData2->toArray();
-            // $transaksiMerge = array_merge($monthlySalesData11, $monthlySalesData22);
-            $detail = array_sum($monthlySalesData1);
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        $monthlySalesData1 = DB::table('transaksis')
+            ->select(
+                DB::raw('MONTH(tgl_selesai) as month'),
+                DB::raw('SUM(total_belanja) as total_sales')
+            )
+            ->whereNotNull('tgl_selesai');
+
+        if ($start_date && $end_date) {
+            $laporan->whereBetween('tgl_selesai', [$start_date, $end_date]);
+            $monthlySalesData1->whereBetween('tgl_selesai', [$start_date, $end_date]);
+        }
+
+        $penjualan = $laporan->get();
+        $monthlySalesDataResults = $monthlySalesData1
+            ->groupBy(DB::raw('MONTH(tgl_selesai)'))
+            ->orderBy(DB::raw('MONTH(tgl_selesai)'))
+            ->get();
+
+        $monthlySalesData = $monthlySalesDataResults->pluck('total_sales', 'month')->toArray();
+        $detail = array_sum($monthlySalesData);
         
         // generate pdf
         $pdf = app('dompdf.wrapper')->loadView('admin.laporan', compact('penjualan', 'detail'));
-
+        
         return $pdf->stream('laporan.pdf');
     }
 }

@@ -189,7 +189,8 @@
         if (startDate && endDate) {
             console.log(`Start Date: ${startDate}`);
             console.log(`End Date: ${endDate}`);
-        }else {
+        }
+        else {
             if (!startDate) {
             startDate = '';
             }
