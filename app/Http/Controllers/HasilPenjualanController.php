@@ -18,14 +18,9 @@ class HasilPenjualanController extends Controller
             ]);
 
             $currentYear = date('Y');
-            $uniqueYears = DB::table('transaksi_admins')
+            $uniqueYears = DB::table('transaksis')
                         ->select('tgl_selesai')
                         ->whereNotNull('tgl_selesai')
-                        ->union(
-                            DB::table('transaksi_pelanggans')
-                                ->select('tgl_selesai')
-                                ->whereNotNull('tgl_selesai')
-                        )
                         ->pluck('tgl_selesai')->map(function ($date) {
                 return \Carbon\Carbon::parse($date)->year;
             })->unique();
@@ -33,13 +28,18 @@ class HasilPenjualanController extends Controller
             $start_date = $request->input('start_date');
             $end_date = $request->input('end_date');
     
-            $admin = DB::table('transaksi_admins')
+            $admin = DB::table('transaksis')
                 ->whereNotNull('tgl_selesai')
-                ->orderBy('transaksi_admins.id_transaksi', 'desc');
-            $pelanggan = DB::table('transaksi_pelanggans')
+                ->orderBy('transaksis.id_transaksi', 'desc')
+                ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksis.id_pelanggan')
+                ->join('users', 'users.id', '=', 'pelanggans.id_user')
+                ->where('users.role', '=', 'admin');
+            $pelanggan = DB::table('transaksis')
                 ->whereNotNull('tgl_selesai')
-                ->orderBy('transaksi_pelanggans.id_transaksi', 'desc')
-                ->join('pelanggans', 'pelanggans.id_user', '=', 'transaksi_pelanggans.id_user');
+                ->orderBy('transaksis.id_transaksi', 'desc')
+                ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksis.id_pelanggan')
+                ->join('users', 'users.id', '=', 'pelanggans.id_user')
+                ->where('users.role', '=', 'pelanggan');
     
             if ($start_date && $end_date) {
                 $admin->whereBetween('tgl_selesai', [$start_date, $end_date]);
@@ -58,7 +58,8 @@ class HasilPenjualanController extends Controller
     {
         $monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         
-        $monthlySalesData1 = TransaksiAdmin::select(
+        $monthlySalesData1 = DB::table('transaksis')
+                            ->select(
                                 DB::raw('MONTH(tgl_selesai) as month'),
                                 DB::raw('SUM(total_belanja) as total_sales')
                             )
@@ -66,23 +67,24 @@ class HasilPenjualanController extends Controller
                             ->whereYear('tgl_selesai', $year)
                             ->groupBy(DB::raw('MONTH(tgl_selesai)'))
                             ->orderBy('month')
-                            ->pluck('total_sales', 'month')->toArray();
+                            ->pluck('total_sales', 'month')
+                            ->toArray();
 
-        $monthlySalesData2 = TransaksiPelanggan::select(
-                                DB::raw('MONTH(tgl_selesai) as month'),
-                                DB::raw('SUM(total_belanja) as total_sales')
-                            )
-                            ->whereNotNull('tgl_selesai')
-                            ->whereYear('tgl_selesai', $year)
-                            ->groupBy(DB::raw('MONTH(tgl_selesai)'))
-                            ->orderBy('month')
-                            ->pluck('total_sales', 'month')->toArray();
+        // $monthlySalesData2 = TransaksiPelanggan::select(
+        //                         DB::raw('MONTH(tgl_selesai) as month'),
+        //                         DB::raw('SUM(total_belanja) as total_sales')
+        //                     )
+        //                     ->whereNotNull('tgl_selesai')
+        //                     ->whereYear('tgl_selesai', $year)
+        //                     ->groupBy(DB::raw('MONTH(tgl_selesai)'))
+        //                     ->orderBy('month')
+        //                     ->pluck('total_sales', 'month')->toArray();
 
-        $transaksiMerge = array_merge($monthlySalesData1, $monthlySalesData2);
-        $totalMonthlySales = array_sum($transaksiMerge);
+        // $transaksiMerge = array_merge($monthlySalesData1, $monthlySalesData2);
+        $totalMonthlySales = array_sum($monthlySalesData1);
         $data = [];
         foreach ($monthNames as $key => $monthName) {
-            $totalSales = ($monthlySalesData1[$key + 1] ?? 0) + ($monthlySalesData2[$key + 1] ?? 0);
+            $totalSales = ($monthlySalesData1[$key + 1] ?? 0);
             $data[$monthName] = $totalSales;
         }
 
@@ -97,30 +99,32 @@ class HasilPenjualanController extends Controller
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
             ]);
-            $laporan = DB::table('transaksi_admins')
+            $laporan = DB::table('transaksis')
+                        ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksi_pelanggans.id_pelanggan')
                         ->select('id_transaksi', 'nama_pelanggan','tgl_selesai', 'total_belanja')
-                        ->whereNotNull('tgl_selesai')
-                        ->union(
-                            DB::table('transaksi_pelanggans')
-                                ->join('pelanggans', 'pelanggans.id_user', '=', 'transaksi_pelanggans.id_user')
-                                ->select('id_transaksi', 'nama_pelanggan','tgl_selesai', 'total_belanja')
-                                ->whereNotNull('tgl_selesai')
-                        );
+                        ->whereNotNull('tgl_selesai');
+                        // ->union(
+                        //     DB::table('transaksi_pelanggans')
+                        //         ->join('pelanggans', 'pelanggans.id_user', '=', 'transaksi_pelanggans.id_user')
+                        //         ->select('id_transaksi', 'nama_pelanggan','tgl_selesai', 'total_belanja')
+                        //         ->whereNotNull('tgl_selesai')
+                        // );
 
             $start_date = $request->input('start_date');
             $end_date = $request->input('end_date');
     
-            $monthlySalesData1 = TransaksiAdmin::select(
-                DB::raw('tgl_selesai as tgl_selesai'),
-                DB::raw('SUM(total_belanja) as total_sales')
-            )
-            ->whereNotNull('tgl_selesai');
+            $monthlySalesData1 = DB::table('transaksis')
+                                    ->select(
+                                        DB::raw('MONTH(tgl_selesai) as month'),
+                                        DB::raw('SUM(total_belanja) as total_sales')
+                                    )
+                                    ->whereNotNull('tgl_selesai');
             
-            $monthlySalesData2 = TransaksiPelanggan::select(
-                DB::raw('tgl_selesai as tgl_selesai'),
-                DB::raw('SUM(total_belanja) as total_sales')
-            )
-            ->whereNotNull('tgl_selesai');
+            // $monthlySalesData2 = TransaksiPelanggan::select(
+            //     DB::raw('tgl_selesai as tgl_selesai'),
+            //     DB::raw('SUM(total_belanja) as total_sales')
+            // )
+            // ->whereNotNull('tgl_selesai');
             
             if ($start_date && $end_date) {
                 $laporan->whereBetween('tgl_selesai', [$start_date, $end_date]);
@@ -133,16 +137,16 @@ class HasilPenjualanController extends Controller
                 ->orderBy('tgl_selesai')
                 ->pluck('total_sales', 'tgl_selesai');
             
-            $monthlySalesData2 = $monthlySalesData2
-                ->groupBy('tgl_selesai')
-                ->orderBy('tgl_selesai')
-                ->pluck('total_sales', 'tgl_selesai');
+            // $monthlySalesData2 = $monthlySalesData2
+            //     ->groupBy('tgl_selesai')
+            //     ->orderBy('tgl_selesai')
+            //     ->pluck('total_sales', 'tgl_selesai');
 
             $penjualan = $laporan->get();
             $monthlySalesData11 = $monthlySalesData1->toArray();
-            $monthlySalesData22 = $monthlySalesData2->toArray();
-            $transaksiMerge = array_merge($monthlySalesData11, $monthlySalesData22);
-            $detail = array_sum($transaksiMerge);
+            // $monthlySalesData22 = $monthlySalesData2->toArray();
+            // $transaksiMerge = array_merge($monthlySalesData11, $monthlySalesData22);
+            $detail = array_sum($monthlySalesData1);
         
         // generate pdf
         $pdf = app('dompdf.wrapper')->loadView('admin.laporan', compact('penjualan', 'detail'));

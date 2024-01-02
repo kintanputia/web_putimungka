@@ -177,7 +177,7 @@ class KeranjangController extends Controller
             $originString = $asal;
         }
         else {
-            $kotaString = 1;
+            $kotaString = 281;
             $originString = 2;
         }
         try {

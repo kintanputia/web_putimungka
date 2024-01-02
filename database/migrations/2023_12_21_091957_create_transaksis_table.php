@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTransaksiAdminsTable extends Migration
+class CreateTransaksisTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class CreateTransaksiAdminsTable extends Migration
      */
     public function up()
     {
-        Schema::create('transaksi_admins', function (Blueprint $table) {
+        Schema::create('transaksis', function (Blueprint $table) {
             $table->bigIncrements('id_transaksi');
-            $table->unsignedBigInteger('id_user');
-            $table->foreign('id_user')->references('id')->on('users')
+            $table->unsignedBigInteger('id_pelanggan');
+            $table->foreign('id_pelanggan')->references('id_pelanggan')->on('pelanggans')
                                 ->onUpdate('cascade')
                                 ->onDelete('restrict');
-            $table->string('nama_pelanggan');
-            $table->string('no_hp');
             $table->boolean('kirim_ekspedisi')->default(false);
             $table->date('tgl_pesan');
             $table->date('tgl_selesai')->nullable();
@@ -39,6 +37,6 @@ class CreateTransaksiAdminsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('transaksi_admins');
+        Schema::dropIfExists('transaksis');
     }
 }

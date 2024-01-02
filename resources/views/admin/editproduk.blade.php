@@ -59,6 +59,9 @@
                                                     <option value="{{ $b->id_bahan }}" selected>{{ $b->nama_bahan }}</option>
                                                     </select>
                                                 </td>
+                                                <td>
+                                                    <input type="text" class="form-control" id="harga_bahan{{ $key }}" name="harga_bahan[]" value="{{ $b->harga }}">
+                                                </td>
                                                 <td><button type="button" name="remove" data-rowid="{{ $key }}" data-table="bahan" class="btn btn-danger btn_remove btn-sm"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
                                             </tr>
                                             @endforeach
@@ -81,10 +84,6 @@
                                                 <?php } ?>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="col-span-6 sm:col-span-4 p-3">
-                                        <label for="harga" class="block text-sm font-medium text-gray-700">Harga</label>
-                                        <input type="number" min="1" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" name="harga" id="harga" placeholder="Harga" value="{{ $detail->harga }}" required>
                                     </div>
                                     <div class="col-span-6 sm:col-span-4 p-3">
                                         <label for="ukuran" class="block text-sm font-medium text-gray-700">Ukuran (cm)</label>
@@ -145,6 +144,8 @@
 
 
 <script>
+    var removedMaterials = [];
+    var availableMaterial = [];
     // warna
     var selectedColors = [];
     var removedColors = [];
@@ -174,12 +175,12 @@
         console.log(selectedColors);
         
         // hapus warna terpilih
-        var availableMaterials = d.filter(item => !selectedColors.includes(item.id));
+        var availableColors = d.filter(item => !selectedColors.includes(item.id));
 
         var newRowWarna = '<tr class="dynamic-added" id="row-warna' + i + '">';
         newRowWarna += '<td><select class="form-control default-select warna-dropdown" id="warna' + j + '" name="warna[]" data-size="5">';
         newRowWarna += '<option value="" selected>Pilih Warna</option>';
-        availableMaterials.forEach(function (color) {
+        availableColors.forEach(function (color) {
             if (!selectedColors.includes(color.id)) {
                 newRowWarna += '<option value="' + color.id + '">' + color.nama_warna + '</option>';
             }
@@ -219,17 +220,20 @@
         }
     });
     // bahan
-    var removedMaterials = [];
     var selectedMaterials = [];
     var jsonB = @json($bahan);
     var b = jsonB.map(function(item) {
-        return item.id_bahan;
+        return {
+            id: item.id_bahan,
+            harga_bahan: item.harga
+        };
     });
     // set selectedMaterials dengan bahan yang sudah terpilih
     $(document).ready(function(){
         for (var s = 0; s < b.length; s++) {
             selectedMaterials.push(b[s]);
         }
+        console.log(selectedMaterials);
     });
     var g = b.length + 1;
     var h = b.length + 2;
@@ -237,56 +241,69 @@
         g++;
         h++;
         var d = @json($allMaterials);
-        
-        var bahant = $('#bahan'+g+' :selected').text();
-        d.forEach(function (bahan) {
-            if (bahant === bahan.nama_bahan) {
-                selectedMaterials.push(bahan.id); //bahan terpilih masuk array
-            }
-        });
-        console.log(selectedMaterials);
-        
+
         // hapus bahan terpilih
-        var availableMaterials = d.filter(item => !selectedMaterials.includes(item.id));
+        availableMaterial = d.filter(item => !selectedMaterials.some(selected => selected.id === item.id));
+        console.log("bahan tersedia : ", availableMaterial);
+        console.log("bahan tidak tersedia : ", selectedMaterials);
 
         var newRowBahan = '<tr class="dynamic-added" id="row-bahan' + g + '">';
         newRowBahan += '<td><select class="form-control default-select bahan-dropdown" id="bahan' + h + '" name="bahan[]" data-size="5">';
         newRowBahan += '<option value="" selected>Pilih Bahan</option>';
-        availableMaterials.forEach(function (Material) {
-            if (!selectedMaterials.includes(Material.id)) {
-                newRowBahan += '<option value="' + Material.id + '">' + Material.nama_bahan + '</option>';
-            }
+        availableMaterial.forEach(function (material) {
+            newRowBahan += '<option value="' + material.id + '">' + material.nama_bahan + '</option>';
         });
         
         newRowBahan += '</select></td>';
-        newRowBahan += '<td><button type="button" name="remove" data-rowid="' + h + '" data-table="bahan" class="btn btn-danger btn_remove btn-sm">';
+        newRowBahan += '<td><input type="number" min="1" class="form-control" name="harga_bahan[]" id="harga_bahan' + h + '" placeholder="Harga"></td>';
+        newRowBahan += '<td><button type="button" name="remove" data-rowid="' + g + '" data-table="bahan" class="btn btn-danger btn_remove btn-sm">';
         newRowBahan += '<i class="fa fa-trash" aria-hidden="true"></i></button></td></tr>';
+
+        var lastHarga = $('#harga_bahan' + g).val();
+        var bahant = $('#bahan'+ g +' :selected').text();
+        d.forEach(function (bahan) {
+            if (bahant === bahan.nama_bahan) {
+                selectedMaterials.push({
+                    id: bahan.id,
+                    harga_bahan: lastHarga
+                });
+            }
+        });
 
         $('#tabel_bahan').append(newRowBahan);
         $('#bahan' + g).prop('disabled', true);//disable dropdown yang sudah terpilih
+
+        // filter bahan yang sudah terpilih
+        availableMaterial = d.filter(item => !selectedMaterials.some(selected => selected.id === item.id));
+
+        // // Update dropdown bahan
+        $('#bahan' + h).empty().append('<option value="" selected>Pilih Bahan</option>');
+        availableMaterial.forEach(function (material) {
+            $('#bahan' + h).append('<option value="' + material.id + '">' + material.nama_bahan + '</option>');
+        });
+        console.log("Updated selectedMaterials:", selectedMaterials);
     });
     // tombol hapus
     $('#tabel_bahan').on('click', '.btn_remove', function () {
-        var tableb= $(this).data('table');
+        var tableb = $(this).data('table');
         var o = @json($allMaterials);
         var rowIdB = $(this).data('rowid');
         var ridB = rowIdB;
         var rowB = $(this).closest('tr');
-        var hapusb = $('#bahan'+ridB+' :selected').text();
-        console.log(hapusb);
+        var selectB = rowB.find('select');
+        var hapusb = selectB.find(':selected').text();
+        console.log('warna yang dihapus', hapusb);
         
         // hapus bahan terpilih dari array
         if (tableb === 'bahan'){
         o.forEach(function (h) {
             if (hapusb === h.nama_bahan) {
-                // selectedMaterials = selectedMaterials.filter(item => item !== h.id);
-                console.log("Before removal: selectedMaterials =", selectedMaterials);
-                selectedMaterials = selectedMaterials.filter(item => item !== h.id);
-                console.log("After removal: selectedMaterials =", selectedMaterials);
-                removedMaterials.push(h.id);
+                console.log("sebelum dihapus =", selectedMaterials);
+                selectedMaterials = selectedMaterials.filter(item => item.id !== h.id);
+                availableMaterial = o.filter(item => !selectedMaterials.some(selected => selected.id === item.id));
+                console.log("setelah dihapus =", selectedMaterials);
             }
         });
-        // $('#row-bahan' + rowIdW).remove();
         rowB.remove();
         }
     });
@@ -294,7 +311,6 @@
 <script>
     function validasi(){
             let a = document.forms["frm_edit"]["nama_produk"].value;
-            let b = document.forms["frm_edit"]["harga"].value;
             let c = document.forms["frm_edit"]["ukuran"].value;
             let d = document.forms["frm_edit"]["berat"].value;
             let e = document.forms["frm_edit"]["nama_motif"].value;
@@ -302,10 +318,26 @@
             let g = document.forms["frm_edit"]["model"].value;
             let h = document.getElementsByName('foto[]');
             let i = document.forms["frm_edit"]["deskripsi"].value;
+            let j = document.forms["frm_edit"]["waktu_pengerjaan"].value;
             let arw = document.getElementsByName('warna[]');
             let arb = document.getElementsByName('bahan[]');
+            var hasEmptyHarga = false;
 
-            if (arw.length === 0) {
+            // cek apakah ada harga kosong
+            $('#tabel_bahan tr').each(function () {
+                var row = $(this);
+                var hargaInput = row.find('input[name="harga_bahan[]"]');
+                var hargaValue = hargaInput.val();
+
+                if (hargaValue === '') {
+                    hasEmptyHarga = true;
+                    row.addClass('empty-harga-row');
+                }
+            });
+            if (hasEmptyHarga) {
+                alert('Harap isi seluruh kolom harga');
+            }
+            else if (arw.length === 0) {
                 alert("Harap pilih warna produk");
                 valid = false;
             }
@@ -326,6 +358,18 @@
             }
             else if (d == ""){
                 alert("Kolom Berat harus diisi");
+                valid = false;
+            }
+            else if (d <= 0 ){
+                alert("Kolom Berat harus lebih besar daripada 0");
+                valid = false;
+            }
+            else if (j == ""){
+                alert("Kolom waktu pengerjaan harus diisi");
+                valid = false;
+            }
+            else if (j <= 0 ){
+                alert("Kolom waktu pengerjaan harus lebih besar daripada 0");
                 valid = false;
             }
             else if (e == ""){
@@ -350,22 +394,32 @@
                 let wrn = document.getElementsByName('warna[]')[indw - 1].value;
                 var indb = arb.length;
                 let bhn = document.getElementsByName('bahan[]')[indb - 1].value;
+                let harga_bhn = document.getElementsByName('harga_bahan[]')[indb - 1].value;
                 if (wrn !== null && wrn !== ''){
-                    selectedColors.push(wrn);
                     const lastWarna = selectedColors[selectedColors.length - 1];
                     const comparisonWarna = wrn;
-                    if (lastWarna !== comparisonWarna) {
-                        selectedColors.pop();//mengeluarkan value array terakhir
+                    console.log("warna terakhir dalam array",lastWarna);
+                    console.log("warna terakhir pada input",comparisonWarna);
+                    if (lastWarna != comparisonWarna) {
                         selectedColors.push(wrn);
                     }
+                    console.log("warna final",selectedColors);
                 }
                 if (bhn !== null && bhn !== ''){
-                    selectedMaterials.push(bhn);
-                    const lastBahan = selectedMaterials[selectedMaterials.length - 1];
+                    selectedMaterials.push({
+                                id: bhn,
+                                harga_bahan: harga_bhn
+                            });
+                    const lastBahan = selectedMaterials[selectedMaterials.length - 1].id;
                     const comparisonBahan = bhn;
-                    if (lastBahan !== comparisonBahan) {
+                    console.log('bahan terakhir dalam array', lastBahan);
+                    console.log('bahan terakhir dalam input', comparisonBahan);
+                    if (lastBahan != comparisonBahan) {
                         selectedMaterials.pop();//mengeluarkan value array terakhir
-                        selectedMaterials.push(bhn);
+                        selectedMaterials.push({
+                                id: bhn,
+                                harga_bahan: harga_bhn
+                            });
                     }
                 }
 
@@ -379,7 +433,56 @@
                     valid = false;
                 }
                 else {
-                    submitForm();
+                    // update seluruh harga bahan
+                    $('#tabel_bahan tr').each(function () {
+                        var row = $(this);
+                        var selectB = row.find('select');
+                        var hargaInput = row.find('input[name="harga_bahan[]"]');
+                        var selectedId = selectB.val();
+                        var hargaValue = hargaInput.val();
+                        console.log('id bahan ', selectedId);
+                        console.log('harga', hargaValue);
+
+                        var existingMaterial = selectedMaterials.find(material => material.id == selectedId);
+                        if (existingMaterial) {
+                            existingMaterial.harga_bahan = hargaValue;
+                        }
+                    });
+                    console.log("bahan final",selectedMaterials);
+
+                    
+                    
+                    // convert isi obj -> int
+                    selectedMaterials.forEach(function(item) {
+                        item.id = parseInt(item.id, 10);
+                        item.harga_bahan = parseInt(item.harga_bahan, 10);
+                    })
+                    
+                    // set array untuk daftar bahan yang dihapus;
+                    removedMaterials = availableMaterial
+                    .filter(function (material) {
+                        return !selectedMaterials.some(function (selected) {
+                            return material.id === selected.id;
+                        });
+                    })
+                    .map(function (material) {
+                        return material.id;
+                    });
+
+                    // cek harga minus
+                    let aman = true;
+                    for (let i = 0; i < selectedMaterials.length; i++) {
+                        if (selectedMaterials[i].harga_bahan < 0) {
+                            alert("Harga bahan produk tidak boleh negatif");
+                            valid = false;
+                            aman  = false;
+                            selectedMaterials[i].harga_bahan = 0;
+                        }
+                    }
+                    if (aman) {
+                        submitForm();
+                    }
+                    
                 }
             }
         }
@@ -387,17 +490,17 @@
 <!-- submit form -->
 <script>
     function submitForm(){
+            var jsonBahan = JSON.stringify(selectedMaterials);//ubah jd json
             var form = $("#frm_edit");
             var forms = $('#frm_edit')[0];
             var url = form.attr('action');
             var formData = new FormData(forms);
-            console.log(selectedColors);
-            console.log(selectedMaterials);
+            console.log("Removed Materials:", removedMaterials);
+            console.log("Removed Colors:", removedColors);
             formData.append('selectedColors', selectedColors);
-            formData.append('selectedMaterial', selectedMaterials);
+            formData.append('selectedMaterial', jsonBahan);
             formData.append('removedColors', removedColors);
-            formData.append('removedMaterial', removedMaterials);
-            console.log(formData);
+            formData.append('removedMaterials', removedMaterials);
 
             $.ajax({
                 type: "POST",
@@ -422,4 +525,10 @@
             });
         }
 </script>
+<style>
+    .empty-harga-row {
+        background-color: #ffe6e6;
+        font-weight: bold;
+        }
+</style>
 @endsection

@@ -33,7 +33,7 @@
                                         </div></a>
                                     <div class="card-body text-center">
                                         <h4 class="card-title">{{ ucwords($d->nama_produk) }}</h4>
-                                        <p class="text-muted">Rp. {{ number_format($d->harga) }}</p>
+                                        <p class="text-muted">{{ $d->price_range }}</p>
                                         <a class="btn btn-outline-primary btn-sm" href="/katalogproduktl/{{ $d->id_produk }}" data-abc="true">Lihat Produk</a>
                                     </div>
                                     </div>

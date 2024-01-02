@@ -5,20 +5,127 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class KatalogController extends Controller
 {   
     public function index_tl(){
-        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
-        return view('katalogtl', ['produk'=>$data]);
+        $produk = DB::table('produks')
+            ->orderBy('id_produk', 'desc')
+            ->get();
+
+        // set price range
+        $produk->transform(function ($product) {
+            $hargaArray = DB::table('warna_bahan_produks')
+                ->where('id_produk', $product->id_produk)
+                ->pluck('harga')
+                ->toArray();
+
+                if (count($hargaArray) > 1) {
+                    $minPrice = min($hargaArray);
+                    $maxPrice = max($hargaArray);
+                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                } elseif (count($hargaArray) === 1) {
+                    $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+                } else {
+                    $product->price_range = "Data Harga tidak ditemukan";
+                }
+                
+                return $product;
+        });
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 15;
+
+        $currentPageItems = $produk->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $produkPaginated = new LengthAwarePaginator(
+            $currentPageItems,
+            count($produk),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+        return view('katalogtl', ['produk'=>$produkPaginated]);
     }
     public function index(){
-        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
-        return view('admin.katalogadmin', ['produk'=>$data]);
+        $produk = DB::table('produks')
+            ->orderBy('id_produk', 'desc')
+            ->get();
+
+        // set price range
+        $produk->transform(function ($product) {
+            $hargaArray = DB::table('warna_bahan_produks')
+                ->where('id_produk', $product->id_produk)
+                ->pluck('harga')
+                ->toArray();
+
+                if (count($hargaArray) > 1) {
+                    $minPrice = min($hargaArray);
+                    $maxPrice = max($hargaArray);
+                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                } elseif (count($hargaArray) === 1) {
+                    $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+                } else {
+                    $product->price_range = "Data Harga tidak ditemukan";
+                }
+                
+                return $product;
+        });
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 15;
+
+        $currentPageItems = $produk->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $produkPaginated = new LengthAwarePaginator(
+            $currentPageItems,
+            count($produk),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+        
+        return view('admin.katalogadmin', ['produk'=>$produkPaginated]);
     }
     public function index_propel(){
-        $data = DB::table('produks')->orderby('id_produk', 'desc')->paginate(15);
-        return view('pelanggan.katalogproduk', ['produk'=>$data]);
+        $produk = DB::table('produks')
+            ->orderBy('id_produk', 'desc')
+            ->get();
+
+        // set price range
+        $produk->transform(function ($product) {
+            $hargaArray = DB::table('warna_bahan_produks')
+                ->where('id_produk', $product->id_produk)
+                ->pluck('harga')
+                ->toArray();
+
+                if (count($hargaArray) > 1) {
+                    $minPrice = min($hargaArray);
+                    $maxPrice = max($hargaArray);
+                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                } elseif (count($hargaArray) === 1) {
+                    $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+                } else {
+                    $product->price_range = "Data Harga tidak ditemukan";
+                }
+                
+                return $product;
+        });
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 15;
+
+        $currentPageItems = $produk->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $produkPaginated = new LengthAwarePaginator(
+            $currentPageItems,
+            count($produk),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+        return view('pelanggan.katalogproduk', ['produk'=>$produkPaginated]);
     }
     public function index_warna(){
         $warna = DB::table('warnas')->orderby('id', 'asc')->get();
@@ -70,6 +177,21 @@ class KatalogController extends Controller
     }
     public function detail_produk_tl($id){
         $informasi = DB::table('produks')->where('id_produk', $id)->first();
+        $hargaArray = DB::table('warna_bahan_produks')
+            ->where('id_produk', $informasi->id_produk)
+            ->pluck('harga')
+            ->toArray();
+
+        if (count($hargaArray) > 1) {
+            $minPrice = min($hargaArray);
+            $maxPrice = max($hargaArray);
+            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+        } elseif (count($hargaArray) === 1) {
+            $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+        } else {
+            $informasi->price_range = "Data Harga tidak ditemukan";
+        }
+        
         $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
                         ->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')
@@ -79,13 +201,28 @@ class KatalogController extends Controller
         $bahan = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
                         ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
-                        ->select('id_bahan', 'nama_bahan')
+                        ->select('id_bahan', 'nama_bahan', 'harga')
                         ->distinct()
                         ->get();
         return view('detailproduktl', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan]);
     }
     public function detaildproduk($id){
         $informasi = DB::table('produks')->where('id_produk', $id)->first();
+        $hargaArray = DB::table('warna_bahan_produks')
+            ->where('id_produk', $informasi->id_produk)
+            ->pluck('harga')
+            ->toArray();
+
+        if (count($hargaArray) > 1) {
+            $minPrice = min($hargaArray);
+            $maxPrice = max($hargaArray);
+            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+        } elseif (count($hargaArray) === 1) {
+            $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+        } else {
+            $informasi->price_range = "Data Harga tidak ditemukan";
+        }
+
         $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
                         ->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')
@@ -95,7 +232,7 @@ class KatalogController extends Controller
         $bahan = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
                         ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
-                        ->select('id_bahan', 'nama_bahan')
+                        ->select('id_bahan', 'nama_bahan', 'harga')
                         ->distinct()
                         ->get();
         return view('admin.detailprodukadmin', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan]);
@@ -103,6 +240,21 @@ class KatalogController extends Controller
     public function detailprodukpel($id){
         $id_user = Auth::user()->id;
         $informasi = DB::table('produks')->where('id_produk', $id)->first();
+        $hargaArray = DB::table('warna_bahan_produks')
+            ->where('id_produk', $informasi->id_produk)
+            ->pluck('harga')
+            ->toArray();
+
+        if (count($hargaArray) > 1) {
+            $minPrice = min($hargaArray);
+            $maxPrice = max($hargaArray);
+            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+        } elseif (count($hargaArray) === 1) {
+            $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+        } else {
+            $informasi->price_range = "Data Harga tidak ditemukan";
+        }
+
         $pelanggan = DB::table('pelanggans')->where('id_user', $id_user)->first();
         $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
@@ -113,7 +265,7 @@ class KatalogController extends Controller
         $bahan = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
                         ->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')
-                        ->select('id_bahan', 'nama_bahan')
+                        ->select('id_bahan', 'nama_bahan', 'harga')
                         ->distinct()
                         ->get();
         return view('pelanggan.detailproduk', ['informasi'=>$informasi, 'warna'=>$warna, 'bahan'=>$bahan, 'pelanggan'=>$pelanggan]);
@@ -126,13 +278,12 @@ class KatalogController extends Controller
     public function addproduct(Request $request){
         $validatedData = $request->validate([
             'nama_produk'=>'required',
-            'harga'=>'required',
             'ukuran'=>'required',
-            'berat'=>'required',
+            'berat'=>'required|numeric|min:1',
             'nama_motif'=>'required',
             'jenis_jahitan'=>'required',
             'model'=>'required',
-            'waktu_pengerjaan'=>'nullable',
+            'waktu_pengerjaan'=>'required|numeric|min:1',
             'deskripsi'=>'required',
             'foto'=>'required|max:10240',
             'foto.*' => 'image',
@@ -140,7 +291,9 @@ class KatalogController extends Controller
             'selectedMaterial'=> 'required'
         ],
         [
-            'foto.max' => 'Ukuran foto melebihi 10 Mb'
+            'foto.max' => 'Ukuran foto melebihi 10 Mb',
+            'waktu_pengerjaan.min' => 'Waktu pengerjaan harus lebih besar dari 0',
+            'berat.min' => 'Waktu pengerjaan harus lebih besar dari 0'
         ]);
 
         $pics = [];
@@ -157,12 +310,15 @@ class KatalogController extends Controller
         // fungsi simpan
         $nama_foto = json_encode($pics); //array->string
         $warnaArray = explode(',', $validatedData['selectedColors']);
-        $bahanArray = explode(',', $validatedData['selectedMaterial']);
+        $bahanJson = $validatedData['selectedMaterial'];
+        $bahanArray = json_decode($bahanJson, true); //obj -> array
+        if ($bahanArray === null && json_last_error() !== JSON_ERROR_NONE) {
+            $jsonError = json_last_error_msg();
+            var_dump("JSON decoding error: $jsonError", $bahanJson);
+        }
         $warnaArray = array_values(array_unique($warnaArray));
-        $bahanArray = array_values(array_unique($bahanArray));
         $simpan =  DB::table('produks')->insertGetId([
             'nama_produk'=>$validatedData['nama_produk'],
-            'harga'=>$validatedData['harga'],
             'ukuran'=>$validatedData['ukuran'],
             'berat'=>$validatedData['berat'],
             'nama_motif'=>$validatedData['nama_motif'],
@@ -174,11 +330,13 @@ class KatalogController extends Controller
             ]);
         if ($simpan){
             foreach ($bahanArray as $bahan) {
+                $harga = $bahan['harga_bahan'];
                 foreach ($warnaArray as $warna) {
                     DB::table('warna_bahan_produks')->insert([
                         'id_produk'=>$simpan,
-                        'id_bahan'=>$bahan,
-                        'id_warna'=>$warna
+                        'id_bahan'=>$bahan['id'],
+                        'id_warna'=>$warna,
+                        'harga'=>$harga
                     ]);
                 }
             }
@@ -235,7 +393,7 @@ class KatalogController extends Controller
     public function edit_produk($id)
     {
         $detail = DB::table('produks')->orderBy('produks.id_produk', 'asc')->where('produks.id_produk', $id)->first();
-        $bahan = DB::table('warna_bahan_produks')->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')->select('id_bahan', 'nama_bahan')->where('warna_bahan_produks.id_produk', $id)->distinct()->get();
+        $bahan = DB::table('warna_bahan_produks')->join('bahans', 'warna_bahan_produks.id_bahan', '=', 'bahans.id')->select('id_bahan', 'nama_bahan', 'harga')->where('warna_bahan_produks.id_produk', $id)->distinct()->get();
         $warna = DB::table('warna_bahan_produks')->join('warnas', 'warna_bahan_produks.id_warna', '=', 'warnas.id')->select('id_warna', 'nama_warna')->where('warna_bahan_produks.id_produk', $id)->distinct()->get();
         $allColors = DB::table('warnas')->get();
         $allMaterials = DB::table('bahans')->get();
@@ -245,27 +403,27 @@ class KatalogController extends Controller
     {
         $validatedData = $request->validate([
             'nama_produk'=>'required',
-            'harga'=>'required',
             'ukuran'=>'required',
-            'berat'=>'required',
+            'berat'=>'required|numeric|min:1',
             'nama_motif'=>'required',
             'jenis_jahitan'=>'required',
             'model'=>'required',
-            'waktu_pengerjaan'=>'nullable',
+            'waktu_pengerjaan'=>'required|numeric|min:1',
             'deskripsi'=>'required',
             'foto'=>'max:10240',
             'foto.*' => 'image',
             'selectedColors'=> 'required',
             'selectedMaterial'=> 'required',
             'removedColors'=>'nullable',
-            'removedMaterial'=>'nullable'
+            'removedMaterials'=>'nullable'
         ],
         [
-            'foto.max' => 'Ukuran foto melebihi 10 Mb'
+            'foto.max' => 'Ukuran foto melebihi 10 Mb',
+            'waktu_pengerjaan.min' => 'Waktu pengerjaan harus lebih besar dari 0',
+            'berat.min' => 'Waktu pengerjaan harus lebih besar dari 0'
         ]);
         $id = $request->id;
         $nama_produk = $validatedData['nama_produk'];
-        $harga = $validatedData['harga'];
         $ukuran = $validatedData['ukuran'];
         $berat = $validatedData['berat'];
         $nama_motif = $validatedData['nama_motif'];
@@ -287,7 +445,6 @@ class KatalogController extends Controller
             $edit1 = DB::table('produks')->where('id_produk', $id)
                 ->update([
                     'nama_produk'=>$nama_produk, 
-                    'harga'=>$harga, 
                     'ukuran'=>$ukuran, 
                     'berat'=>$berat, 
                     'nama_motif'=>$nama_motif, 
@@ -301,7 +458,6 @@ class KatalogController extends Controller
             $edit2 = DB::table('produks')->where('id_produk', $id)
                 ->update([
                     'nama_produk'=>$nama_produk, 
-                    'harga'=>$harga, 
                     'ukuran'=>$ukuran, 
                     'berat'=>$berat, 
                     'nama_motif'=>$nama_motif, 
@@ -312,30 +468,50 @@ class KatalogController extends Controller
                 ]);
         }
         $warArr = explode(',', $validatedData['selectedColors']);
-        $bahArr = explode(',', $validatedData['selectedMaterial']);
         $warnaArray = array_unique($warArr);
-        $bahanArray = array_unique($bahArr);
+        $bahanJson = $validatedData['selectedMaterial'];
+        $bahanArray = json_decode($bahanJson, true); //obj -> array
+        if ($bahanArray === null && json_last_error() !== JSON_ERROR_NONE) {
+            $jsonError = json_last_error_msg();
+            var_dump("JSON decoding error: $jsonError", $bahanJson);
+        }
         $HwarArr = explode(',', $validatedData['removedColors']);
-        $HbahArr = explode(',', $validatedData['removedMaterial']);
+        $HbahArr = explode(',', $validatedData['removedMaterials']);
         $HwarnaArray = array_unique($HwarArr);
         $HbahanArray = array_unique($HbahArr);
-        
-        foreach($HwarnaArray as $hw){
-            DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_warna', $HwarnaArray)->delete();
-        }
-        foreach($HbahanArray as $hb){
-            DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_bahan', $HbahanArray)->delete();
-        }
-        // DB::table('warna_bahan_produks')->where('id_produk', $id)->delete();
+
+        DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_warna', $HwarnaArray)->delete();
+        DB::table('warna_bahan_produks')->where('id_produk', $id)->whereIn('id_bahan', $HbahanArray)->delete();
+
             foreach ($bahanArray as $bahan) {
+                $harga = $bahan['harga_bahan'];
+                
                 foreach ($warnaArray as $warna) {
-                    DB::table('warna_bahan_produks')->updateOrInsert([
-                        'id_produk'=>$id,
-                        'id_bahan'=>$bahan,
-                        'id_warna'=>$warna
-                    ]);
+                    // cek record
+                    $existingRecord = DB::table('warna_bahan_produks')
+                        ->where('id_produk', $id)
+                        ->where('id_bahan', $bahan['id'])
+                        ->where('id_warna', $warna)
+                        ->first();
+            
+                    if ($existingRecord) {
+                        // jika ada update harga saja
+                        DB::table('warna_bahan_produks')
+                            ->where('id_produk', $id)
+                            ->where('id_bahan', $bahan['id'])
+                            ->where('id_warna', $warna)
+                            ->update(['harga' => $harga]);
+                    } else {
+                        // insert data bary
+                        DB::table('warna_bahan_produks')->insert([
+                            'id_produk' => $id,
+                            'id_bahan' => $bahan['id'],
+                            'id_warna' => $warna,
+                            'harga' => $harga
+                        ]);
+                    }
                 }
-            }
+            }            
             return redirect()->action([KatalogController::class, 'index']);
         
     }

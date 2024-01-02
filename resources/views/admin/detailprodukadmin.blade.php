@@ -49,7 +49,7 @@
                                                 <h3><strong>{{ ucwords($informasi->nama_produk) }}</strong></h3>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <p class="m-0 p-0 price-pro">Rp. {{ number_format($informasi->harga) }}</p>
+                                                    <p class="m-0 p-0 price-pro">{{ $informasi->price_range }}</p>
                                                     <hr class="p-0 m-0">
                                                 </div>
                                                 <div class="col-lg-12 pt-2">
@@ -175,9 +175,11 @@
                                                                     <select class="form-control mb-2" id="bahan" name="bahan" data-size="5">
                                                                         <option value="" selected>---- Pilih Bahan ----</option>
                                                                         @foreach ($bahan as $bahan)
-                                                                        <option value="{{ $bahan->id_bahan }}">{{ $bahan->nama_bahan }}</option>
+                                                                        <option value="{{ $bahan->id_bahan }}" data-harga="{{ $bahan->harga }}">{{ $bahan->nama_bahan }}</option>
                                                                         @endforeach
                                                                     </select>
+                                                                    <label for="harga_produk" class="form-label">Harga Produk</label>
+                                                                    <input type="text" class="form-control" id="harga_produk" name="harga_produk">
                                                                     <div class="form-check mt-3 ml-2">
                                                                         <input class="form-check-input" type="checkbox" id="tambahmotif">
                                                                         <label for="tambahmotif" class="form-label">Ingin menambah motif? (Tambahan biaya Rp. 20.000)</label>
@@ -260,26 +262,40 @@
     }
 </script>
 <script>
-    var additionalCost = 0;
-    var tambah_motif = 0;
-    var final_price = {{ $informasi->harga }};
-
+    var hargaProdukInput = document.getElementById('harga_produk');
+    var bahanDropdown = document.getElementById('bahan');
     var checkbox = document.getElementById("tambahmotif");
+    var tambah_motif = 0;
+    var basePrice = 0;
+
+    // set harga berdasarkan bahan terpilih
+    bahanDropdown.addEventListener('change', function() {
+        var selectedBahanOption = bahanDropdown.options[bahanDropdown.selectedIndex];
+        var selectedBahanHarga = selectedBahanOption.getAttribute('data-harga');
+        basePrice = parseFloat(selectedBahanHarga) || 0;
+        hargaProdukInput.value = selectedBahanHarga || 0;
+        checkbox.checked = false;
+    });
+
     checkbox.addEventListener("change", function() {
-        if (checkbox.checked) {
-            tambah_motif = 1;
-            final_price = {{ $informasi->harga }} + 20000;
+        tambah_motif = checkbox.checked ? 1 : 0;
+
+        if (tambah_motif) {
+            final_price = basePrice + 20000;
         } else {
-            final_price = {{$informasi->harga}};
+            final_price = basePrice;
         }
+
+        hargaProdukInput.value = final_price;
     });
 
     function submitForm(){
+            var harga_final = $('#harga_produk').val();
             var form = $("#frm_addker");
             var forms = $('#frm_addker')[0];
             var url = form.attr('action');
             var formData = new FormData(forms);
-            formData.append('harga_produk', final_price);
+            formData.append('harga_produk', harga_final);
             formData.append('tambahan_motif', tambah_motif);
             $.ajax({
             type: "POST",

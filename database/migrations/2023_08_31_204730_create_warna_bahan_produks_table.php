@@ -27,6 +27,7 @@ class CreateWarnaBahanProduksTable extends Migration
                                     ->onUpdate('cascade')
                                     ->onDelete('restrict');
             $table->primary(['id_produk', 'id_warna', 'id_bahan']);
+            $table->integer('harga');
             $table->timestamps();
         });
     }

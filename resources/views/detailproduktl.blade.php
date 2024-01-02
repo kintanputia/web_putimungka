@@ -49,7 +49,7 @@
                                                     <h3><strong>{{ ucwords($informasi->nama_produk) }}</strong></h3>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <p class="m-0 p-0 price-pro">Rp. {{ number_format($informasi->harga) }}</p>
+                                                    <p class="m-0 p-0 price-pro">{{ $informasi->price_range }}</p>
                                                     <hr class="p-0 m-0">
                                                 </div>
                                                 <div class="col-lg-12 pt-2">

@@ -46,7 +46,7 @@
                         </a>
                         <div class="card-body text-center">
                             <h4 class="card-title">{{ ucwords($data->nama_produk) }}</h4>
-                            <p class="text-muted">Rp. {{ number_format($data->harga) }}</p>
+                            <p class="text-muted">{{ $data->price_range }}</p>
                             <a class="btn btn-outline-primary btn-sm" href="/katalogadmin/{{ $data->id_produk }}" data-abc="true">Lihat Produk</a>
                         </div>
                         </div>
