@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Models\TransaksiAdmin;
-use App\Models\TransaksiPelanggan;
 
 class HasilPenjualanController extends Controller
 {
@@ -70,17 +68,6 @@ class HasilPenjualanController extends Controller
                             ->pluck('total_sales', 'month')
                             ->toArray();
 
-        // $monthlySalesData2 = TransaksiPelanggan::select(
-        //                         DB::raw('MONTH(tgl_selesai) as month'),
-        //                         DB::raw('SUM(total_belanja) as total_sales')
-        //                     )
-        //                     ->whereNotNull('tgl_selesai')
-        //                     ->whereYear('tgl_selesai', $year)
-        //                     ->groupBy(DB::raw('MONTH(tgl_selesai)'))
-        //                     ->orderBy('month')
-        //                     ->pluck('total_sales', 'month')->toArray();
-
-        // $transaksiMerge = array_merge($monthlySalesData1, $monthlySalesData2);
         $totalMonthlySales = array_sum($monthlySalesData1);
         $data = [];
         foreach ($monthNames as $key => $monthName) {

@@ -24,7 +24,12 @@ class KatalogController extends Controller
                 if (count($hargaArray) > 1) {
                     $minPrice = min($hargaArray);
                     $maxPrice = max($hargaArray);
-                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+            
+                    if ($minPrice === $maxPrice) {
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+                    } else {
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                    }
                 } elseif (count($hargaArray) === 1) {
                     $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
                 } else {
@@ -63,7 +68,13 @@ class KatalogController extends Controller
                 if (count($hargaArray) > 1) {
                     $minPrice = min($hargaArray);
                     $maxPrice = max($hargaArray);
-                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+            
+                    if ($minPrice === $maxPrice) {
+                        // If minPrice and maxPrice are the same, save only one of them
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+                    } else {
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                    }
                 } elseif (count($hargaArray) === 1) {
                     $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
                 } else {
@@ -103,7 +114,13 @@ class KatalogController extends Controller
                 if (count($hargaArray) > 1) {
                     $minPrice = min($hargaArray);
                     $maxPrice = max($hargaArray);
-                    $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+            
+                    if ($minPrice === $maxPrice) {
+                        // If minPrice and maxPrice are the same, save only one of them
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+                    } else {
+                        $product->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                    }
                 } elseif (count($hargaArray) === 1) {
                     $product->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
                 } else {
@@ -185,7 +202,12 @@ class KatalogController extends Controller
         if (count($hargaArray) > 1) {
             $minPrice = min($hargaArray);
             $maxPrice = max($hargaArray);
-            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+
+            if ($minPrice === $maxPrice) {
+                $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+            } else {
+                $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+            }
         } elseif (count($hargaArray) === 1) {
             $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
         } else {
@@ -213,15 +235,20 @@ class KatalogController extends Controller
             ->pluck('harga')
             ->toArray();
 
-        if (count($hargaArray) > 1) {
-            $minPrice = min($hargaArray);
-            $maxPrice = max($hargaArray);
-            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
-        } elseif (count($hargaArray) === 1) {
-            $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
-        } else {
-            $informasi->price_range = "Data Harga tidak ditemukan";
-        }
+            if (count($hargaArray) > 1) {
+                $minPrice = min($hargaArray);
+                $maxPrice = max($hargaArray);
+            
+                if ($minPrice === $maxPrice) {
+                    $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+                } else {
+                    $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+                }
+            } elseif (count($hargaArray) === 1) {
+                $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
+            } else {
+                $informasi->price_range = "Data Harga tidak ditemukan";
+            }
 
         $warna = DB::table('warna_bahan_produks')
                         ->where('id_produk', $id)
@@ -248,7 +275,12 @@ class KatalogController extends Controller
         if (count($hargaArray) > 1) {
             $minPrice = min($hargaArray);
             $maxPrice = max($hargaArray);
-            $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+
+            if ($minPrice === $maxPrice) {
+                $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.');
+            } else {
+                $informasi->price_range = "Rp. " . number_format($minPrice, 0, ',', '.') . " - Rp. " . number_format($maxPrice, 0, ',', '.');
+            }
         } elseif (count($hargaArray) === 1) {
             $informasi->price_range = "Rp. " . number_format($hargaArray[0], 0, ',', '.');
         } else {

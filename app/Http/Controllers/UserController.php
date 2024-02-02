@@ -38,6 +38,7 @@ class UserController extends Controller
                         'indonesia_provinces.name as nama_provinsi'
                         )
                 ->first();
+        // dd($data);
         $allProvinces = DB::table('indonesia_provinces')->get();
         $allCities = DB::table('indonesia_cities')
                             ->join('indonesia_provinces', 'indonesia_provinces.code', '=', 'indonesia_cities.province_code')

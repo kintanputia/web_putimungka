@@ -30,7 +30,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="provinsi" name="provinsi">
                                                 @foreach ($allProvinces as $p)
-                                                    <option value="{{ $p->id }}" {{ $data->nama_provinsi == $p->id ? 'selected' : '' }}>
+                                                    <option value="{{ $p->id }}" {{ $data->id_provinsi == $p->id ? 'selected' : '' }}>
                                                         {{ $p->name }}
                                                     </option>
                                                 @endforeach
@@ -39,7 +39,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="kota" name="kota">
                                                 @foreach ($allCities as $k)
-                                                    <option value="{{ $k->id }}" {{ $data->nama_kota == $k->id ? 'selected' : '' }}>
+                                                    <option value="{{ $k->id }}" {{ $data->id_kota == $k->id ? 'selected' : '' }}>
                                                         {{ $k->name }}
                                                     </option>
                                                 @endforeach
@@ -48,7 +48,7 @@
                                         <div class="col-span-6 sm:col-span-4 p-3">
                                             <select class="form-control default-select" id="kecamatan" name="kecamatan">
                                                 @foreach ($allKecamatan as $kc)
-                                                    <option value="{{ $kc->id }}" {{ $data->nama_kecamatan == $kc->id ? 'selected' : '' }}>
+                                                    <option value="{{ $kc->id }}" {{ $data->id_kecamatan == $kc->id ? 'selected' : '' }}>
                                                         {{ $kc->name }}
                                                     </option>
                                                 @endforeach

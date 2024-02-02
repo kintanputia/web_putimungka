@@ -182,6 +182,11 @@ class PesananController extends Controller
                     ->join('warnas', 'warnas.id', '=', 'detail_transaksis.id_warna')
                     ->join('bahans', 'bahans.id', '=', 'detail_transaksis.id_bahan')
                     ->get();
+        $waktu_pengerjaan = DB::table('detail_transaksis')
+                        ->where('id_transaksi', $id)
+                        ->join('produks', 'produks.id_produk', '=', 'detail_transaksis.id_produk')
+                        ->select('produks.waktu_pengerjaan as max_waktu_pengerjaan')
+                        ->max('produks.waktu_pengerjaan');
         $detail = DB::table('transaksis')->where('transaksis.id_transaksi', $id)
                     ->leftJoin('distribusi_barangs', 'distribusi_barangs.id_transaksi', '=', 'transaksis.id_transaksi')
                     ->leftJoin('alamat_pelanggans', 'alamat_pelanggans.id_alamat', '=', 'distribusi_barangs.id_alamat')
@@ -196,6 +201,8 @@ class PesananController extends Controller
                             'indonesia_provinces.name as nama_provinsi'
                             )
                     ->first();
+        // tambah data waktu pengerjaan
+        $detail->max_waktu_pengerjaan = $waktu_pengerjaan;
         return view('pelanggan.detailpesananpelanggan', ['data'=>$data, 'detail'=>$detail]);
     }
     public function detail_pesanan_admin ($id)
@@ -205,6 +212,11 @@ class PesananController extends Controller
                     ->join('warnas', 'warnas.id', '=', 'detail_transaksis.id_warna')
                     ->join('bahans', 'bahans.id', '=', 'detail_transaksis.id_bahan')
                     ->get();
+        $waktu_pengerjaan = DB::table('detail_transaksis')
+                        ->where('id_transaksi', $id)
+                        ->join('produks', 'produks.id_produk', '=', 'detail_transaksis.id_produk')
+                        ->select('produks.waktu_pengerjaan as max_waktu_pengerjaan')
+                        ->max('produks.waktu_pengerjaan');
         $detail = DB::table('transaksis')
                     ->where('transaksis.id_transaksi', $id)
                     ->leftJoin('distribusi_barangs', 'distribusi_barangs.id_transaksi', '=', 'transaksis.id_transaksi')
@@ -234,7 +246,9 @@ class PesananController extends Controller
                         'indonesia_provinces.name as nama_provinsi'
                         )
                 ->first();
-    
+
+        // tambah data waktu pengerjaan
+        $detail->max_waktu_pengerjaan = $waktu_pengerjaan;
         return view('admin.detailpesananadmin', compact('data', 'detail', 'distribusiBarangAdmin'));
     }
     public function detail_pesanan_adminbypel ($id)
@@ -244,6 +258,11 @@ class PesananController extends Controller
                     ->join('warnas', 'warnas.id', '=', 'detail_transaksis.id_warna')
                     ->join('bahans', 'bahans.id', '=', 'detail_transaksis.id_bahan')
                     ->get();
+        $waktu_pengerjaan = DB::table('detail_transaksis')
+                        ->where('id_transaksi', $id)
+                        ->join('produks', 'produks.id_produk', '=', 'detail_transaksis.id_produk')
+                        ->select('produks.waktu_pengerjaan as max_waktu_pengerjaan')
+                        ->max('produks.waktu_pengerjaan');
         $detail = DB::table('transaksis')
                     ->where('transaksis.id_transaksi', $id)
                     ->leftJoin('distribusi_barangs', 'distribusi_barangs.id_transaksi', '=', 'transaksis.id_transaksi')
@@ -274,6 +293,9 @@ class PesananController extends Controller
                         'indonesia_provinces.name as nama_provinsi'
                         )
                 ->first();
+
+        // tambah data waktu pengerjaan
+        $detail->max_waktu_pengerjaan = $waktu_pengerjaan;
         return view('admin.detailpesananadmin', compact('data', 'detail', 'distribusiBarangAdmin'));
     }
     public function insert_bukti_bayar_adm(Request $request)
@@ -414,17 +436,20 @@ class PesananController extends Controller
                 ->join('pelanggans', 'pelanggans.id_pelanggan', '=', 'transaksis.id_pelanggan')
                 ->join('users', 'users.id', '=', 'pelanggans.id_user')
                 ->leftJoin('distribusi_barangs', 'distribusi_barangs.id_transaksi', '=', 'transaksis.id_transaksi')
-                ->leftJoin('indonesia_districts', 'indonesia_districts.id', '=', 'distribusi_barangs.id_kecamatan')
+                ->leftJoin('alamat_pelanggans', 'alamat_pelanggans.id_alamat', '=', 'distribusi_barangs.id_alamat')
+                ->leftJoin('indonesia_districts', 'indonesia_districts.id', '=', 'alamat_pelanggans.id_kecamatan')
                 ->leftJoin('indonesia_cities', 'indonesia_cities.code', '=', 'indonesia_districts.city_code')
                 ->leftJoin('indonesia_provinces', 'indonesia_provinces.code', '=', 'indonesia_cities.province_code')
                 ->select([
                     'transaksis.*',
+                    'pelanggans.*',
+                    'alamat_pelanggans.*',
                     'users.id as id_user',
                     'users.role as role',
                     DB::raw('IFNULL(distribusi_barangs.id_transaksi, 0) as id_distribusi'),
                     DB::raw('IFNULL(distribusi_barangs.biaya_ongkir, 0) as biaya_ongkir'),
-                    DB::raw('IFNULL(distribusi_barangs.alamat, "Default Kecamatan") as alamat'),
-                    DB::raw('IFNULL(distribusi_barangs.kode_pos, "Default Kode Pos") as kode_pos'),
+                    DB::raw('IFNULL(alamat_pelanggans.alamat, "Default Kecamatan") as alamat'),
+                    DB::raw('IFNULL(alamat_pelanggans.kode_pos, "Default Kode Pos") as kode_pos'),
                     DB::raw('IFNULL(indonesia_districts.name, "Default Kecamatan") as kecamatan_tujuan'),
                     DB::raw('IFNULL(indonesia_cities.name, "Default Kota") as kota_tujuan'),
                     DB::raw('IFNULL(indonesia_provinces.name, "Default Provinsi") as provinsi_tujuan')
@@ -457,6 +482,7 @@ class PesananController extends Controller
                 ->select([
                     'transaksis.*',
                     'pelanggans.*',
+                    'alamat_pelanggans.*',
                     'users.id as id_user',
                     'users.role as role',
                     DB::raw('IFNULL(distribusi_barangs.id_transaksi, 0) as id_distribusi'),

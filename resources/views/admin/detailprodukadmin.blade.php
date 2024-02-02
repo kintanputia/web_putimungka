@@ -84,7 +84,7 @@
                                                             <tr>
                                                                 <th>Waktu Pengerjaan </th>
                                                                 <td>:</td>
-                                                                <td>{{ $informasi->waktu_pengerjaan }}</td>
+                                                                <td>{{ $informasi->waktu_pengerjaan }} hari</td>
                                                             </tr>
                                                             <tr>
                                                                 <th>Warna</th>

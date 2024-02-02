@@ -112,17 +112,6 @@ class DashboardController extends Controller
                             ->orderBy('month')
                             ->pluck('total_sales', 'month')->toArray();
 
-        // $monthlySalesData2 = TransaksiPelanggan::select(
-        //                         DB::raw('MONTH(tgl_selesai) as month'),
-        //                         DB::raw('SUM(total_belanja) as total_sales')
-        //                     )
-        //                     ->whereNotNull('tgl_selesai')
-        //                     ->whereYear('tgl_selesai', $year)
-        //                     ->groupBy(DB::raw('MONTH(tgl_selesai)'))
-        //                     ->orderBy('month')
-        //                     ->pluck('total_sales', 'month')->toArray();
-
-        // $transaksiMerge = array_merge($monthlySalesData1, $monthlySalesData2);
         $totalMonthlySales = array_sum($monthlySalesData1);
         $data = [];
         foreach ($monthNames as $key => $monthName) {

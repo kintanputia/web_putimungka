@@ -23,6 +23,11 @@
                                 <td>{{ $detail->tgl_selesai}}</td>
                             </tr>
                             <tr>
+                                <th>Waktu Pengerjaan Maksimal</th>
+                                <td></td>
+                                <td>{{ $detail->max_waktu_pengerjaan}} hari</td>
+                            </tr>
+                            <tr>
                                 <th>Distribusi Barang</th>
                                 <td></td>
                                 <td>
